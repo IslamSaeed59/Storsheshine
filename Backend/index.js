@@ -14,14 +14,23 @@ const { User, Profile } = require("./Models/associations");
 dotenv.config();
 
 // Initialize Express App
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // أثناء التطوير
+      "https://storsheshine.vercel.app", // production
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 app.use(express.json());
 
 // Create HTTP server and initialize Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Your frontend URL
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Authorization", "Content-Type"],
     credentials: true,
