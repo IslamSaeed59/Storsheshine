@@ -2,44 +2,38 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import {
-  Menu,
-  X,
-  Sparkles,
-  LayoutDashboard,
-  LogOut,
-} from "lucide-react";
+import { Menu, X, Sparkles, LayoutDashboard, LogOut } from "lucide-react";
 import { toast } from "react-toastify";
 
-const PromotionalBar = () => {
-  const text =
-    "✨ Today’s deal: Buy X and get Y% off! 💅 New arrivals just landed — check them out! 🎁 Free shipping on all orders over $50! 🔥 Limited time offer — don’t miss out!";
+// const PromotionalBar = () => {
+//   const text =
+//     "✨ Today’s deal: Buy X and get Y% off! 💅 New arrivals just landed — check them out! 🎁 Free shipping on all orders over $50! 🔥 Limited time offer — don’t miss out!";
 
-  return (
-    <div className="relative bg-[#cc1f69] text-white text-sm font-semibold overflow-hidden w-full h-10 flex items-center">
-      <motion.div
-        className="absolute flex items-center gap-12 whitespace-nowrap"
-        initial={{ x: "100%" }}
-        animate={{ x: "-100%" }}
-        transition={{
-          ease: "linear",
-          duration: 15, // السرعة
-          repeat: Infinity,
-        }}
-      >
-        {[...Array(1)].map((_, i) => (
-          <div
-            key={i}
-            className="inline-flex items-center gap-3 px-6 whitespace-nowrap"
-          >
-            <Sparkles className="w-4 h-4 text-yellow-300 flex-shrink-0" />
-            <span className="whitespace-nowrap">{text}</span>
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  );
-};
+//   return (
+//     <div className="relative bg-[#cc1f69] text-white text-sm font-semibold overflow-hidden w-full h-10 flex items-center">
+//       <motion.div
+//         className="absolute flex items-center gap-12 whitespace-nowrap"
+//         initial={{ x: "100%" }}
+//         animate={{ x: "-100%" }}
+//         transition={{
+//           ease: "linear",
+//           duration: 15, // السرعة
+//           repeat: Infinity,
+//         }}
+//       >
+//         {[...Array(1)].map((_, i) => (
+//           <div
+//             key={i}
+//             className="inline-flex items-center gap-3 px-6 whitespace-nowrap"
+//           >
+//             <Sparkles className="w-4 h-4 text-yellow-300 flex-shrink-0" />
+//             <span className="whitespace-nowrap">{text}</span>
+//           </div>
+//         ))}
+//       </motion.div>
+//     </div>
+//   );
+// };
 
 const UserTopBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
