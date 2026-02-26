@@ -1,5 +1,6 @@
 import {
   Search,
+  Menu,
   Bell,
   ChevronDown,
   User,
@@ -10,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
-const TopBar = () => {
+const TopBar = ({ onMenuClick }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -31,7 +32,14 @@ const TopBar = () => {
   return (
     <header className="bg-white shadow-sm p-4 flex items-center justify-between z-10">
       {/* Search Bar */}
-      <div className="relative w-full max-w-xs">
+      <div className="flex items-center gap-4">
+        <button
+          onClick={onMenuClick}
+          className="text-gray-500 hover:text-gray-700 md:hidden"
+        >
+          <Menu size={24} />
+        </button>
+        <div className="relative w-full max-w-xs"></div>
       </div>
 
       {/* Right side icons and profile */}

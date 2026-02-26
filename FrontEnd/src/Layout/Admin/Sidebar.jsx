@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-const Sidebar = () => {
+const Sidebar = ({ onClose }) => {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
 
   const navLinkClasses =
@@ -30,6 +30,7 @@ const Sidebar = () => {
       <nav className="flex-1 space-y-2 p-4">
         {/* Store  */}
         <NavLink
+          onClick={onClose}
           to="/"
           className={({ isActive }) =>
             `${navLinkClasses} ${
@@ -54,6 +55,7 @@ const Sidebar = () => {
 
         {/* Category */}
         <NavLink
+          onClick={onClose}
           to="/admin/category"
           className={({ isActive }) =>
             `${navLinkClasses} ${
@@ -66,6 +68,7 @@ const Sidebar = () => {
         </NavLink>
 
         <NavLink
+          onClick={onClose}
           to="/admin/products"
           className={({ isActive }) =>
             `${navLinkClasses} ${
@@ -78,6 +81,7 @@ const Sidebar = () => {
         </NavLink>
 
         <NavLink
+          onClick={onClose}
           to="/admin/users"
           className={({ isActive }) =>
             `${navLinkClasses} ${
@@ -125,6 +129,7 @@ const Sidebar = () => {
             }`}
           >
             <NavLink
+              onClick={onClose}
               to="/admin/orders/accepted"
               className={({ isActive }) =>
                 `block px-3 py-2 text-sm rounded-lg hover:bg-gray-100 transition ${
