@@ -28,14 +28,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/admin"
-            element={
-              <Admin>
-                <AdminLayout />
-              </Admin>
-            }
-          >
+          <Route path="/admin" element={<AdminLayout />}>
             {/* Category */}
             <Route path="category" element={<Category />} />
             <Route path="category/create" element={<CreateCategory />} />
