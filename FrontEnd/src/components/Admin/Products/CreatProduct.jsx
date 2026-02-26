@@ -168,9 +168,7 @@ const CreatProduct = () => {
               Description
             </label>
             <textarea
-              {...register("description", {
-                required: "Description is required",
-              })}
+              {...register("description", {})}
               rows="4"
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
                 errors.description ? "border-red-500" : "border-gray-300"
