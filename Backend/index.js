@@ -13,7 +13,14 @@ const { User, Profile } = require("./Models/associations");
 // Load environment variables
 dotenv.config();
 
-// Initialize Express App
+
+app.options("*", cors({
+  origin: ["http://localhost:5173", "https://storsheshine.vercel.app"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+
 const allowedOrigins = [
   "http://localhost:5173",
   "https://storsheshine.vercel.app",
@@ -22,7 +29,9 @@ const allowedOrigins = [
 app.use(cors({
   origin: function(origin, callback){
     if (!origin) return callback(null, true); // يسمح بالطلبات من Postman أو السيرفرات
-    if (allowedOrigins.includes(origin)) {
+    // إزالة نهاية / لو موجودة
+    const cleanOrigin = origin.replace(/\/$/, "");
+    if (allowedOrigins.includes(cleanOrigin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -30,7 +39,7 @@ app.use(cors({
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // لو محتاج ترسل كوكيز أو توكن
+  credentials: true,
 }));
 app.use(express.json());
 
