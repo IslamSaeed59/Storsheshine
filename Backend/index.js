@@ -14,13 +14,24 @@ const { User, Profile } = require("./Models/associations");
 dotenv.config();
 
 // Initialize Express App
-app.use(
-  cors({
-    origin: ["*"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://storsheshine.vercel.app",
+];
+
+app.use(cors({
+  origin: function(origin, callback){
+    if (!origin) return callback(null, true); // يسمح بالطلبات من Postman أو السيرفرات
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // لو محتاج ترسل كوكيز أو توكن
+}));
 app.use(express.json());
 
 // Create HTTP server and initialize Socket.IO
