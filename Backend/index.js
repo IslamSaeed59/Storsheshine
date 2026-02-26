@@ -21,8 +21,10 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Your frontend URL
+    origin: "*", // Your frontend URL
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Authorization", "Content-Type"],
+    credentials: true,
   },
 });
 
@@ -83,8 +85,7 @@ const PORT = process.env.PORT || 9000;
   }
   try {
     // 1. Authenticate the database connection
-    await connectDB();
-    console.log("✅ Database connected successfully!"); // connectDB already logs this
+    await connectDB(); // connectDB already logs this
 
     // ✅ Seed Default Admin
     const adminEmail = "Eslam@gmail.com";
