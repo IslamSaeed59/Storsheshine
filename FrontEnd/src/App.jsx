@@ -20,7 +20,7 @@ import CreateCategory from "./components/Admin/Category/CreateCategory";
 import Category from "./components/Admin/Category/Category";
 import ProductCard from "./components/Admin/Products/ProductCard";
 import UserProducts from "./components/Users/Products/UserProducts";
-import ProductDetails from "./components/Users/Products/productDetails";
+import ProductDetails from "./components/Users/Products/ProductDetails";
 
 const App = () => {
   return (
