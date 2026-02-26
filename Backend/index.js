@@ -13,34 +13,30 @@ const { User, Profile } = require("./Models/associations");
 // Load environment variables
 dotenv.config();
 
-
-app.options("*", cors({
-  origin: ["http://localhost:5173", "https://storsheshine.vercel.app"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}));
-
 const allowedOrigins = [
   "http://localhost:5173",
   "https://storsheshine.vercel.app",
 ];
 
-app.use(cors({
-  origin: function(origin, callback){
-    if (!origin) return callback(null, true); // يسمح بالطلبات من Postman أو السيرفرات
-    // إزالة نهاية / لو موجودة
-    const cleanOrigin = origin.replace(/\/$/, "");
-    if (allowedOrigins.includes(cleanOrigin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // يسمح بالطلبات من السيرفر أو Postman
+      const cleanOrigin = origin.replace(/\/$/, "");
+      if (allowedOrigins.includes(cleanOrigin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // مهم لو تبعت كوكيز أو توكن
+  }),
+);
+
+// السماح بالـ preflight لكل الراوتس
+app.options("*", cors());
 app.use(express.json());
 
 // Create HTTP server and initialize Socket.IO
