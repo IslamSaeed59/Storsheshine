@@ -16,10 +16,7 @@ dotenv.config();
 // Initialize Express App
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // أثناء التطوير
-      "https://storsheshine.vercel.app", // production
-    ],
+    origin: ["*"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
