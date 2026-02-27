@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProductById, createVariant } from "../../../Services/api";
+import {
+  getProductById,
+  createVariant,
+  uploadVariantImage,
+} from "../../../Services/api";
 import Header from "../../../Layout/Admin/Header";
 import { toast } from "react-toastify";
 import {
@@ -15,6 +19,7 @@ import {
   DollarSign,
   Image as ImageIcon,
 } from "lucide-react";
+import { FiUpload, FiX } from "react-icons/fi";
 
 const ProductCard = () => {
   const { id } = useParams();
@@ -25,11 +30,62 @@ const ProductCard = () => {
   const [submitting, setSubmitting] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  // ✅ Remove selected image
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  // ✅ Upload image with category name
+  const handleImageUpload = async () => {
+    if (!imageFile) return null;
+
+    const formData = new FormData();
+
+    formData.append("productImage", imageFile);
+
+    try {
+      setUploading(true);
+      const response = await uploadVariantImage(formData);
+      console.log("✅ Upload response:", response.data); // Debug
+      return response.data.imageUrl;
+    } catch (error) {
+      console.error("❌ Upload error:", error);
+      toast.error("Image upload failed");
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const [newVariant, setNewVariant] = useState({
     size: "",
     color: "",
     price: "",
     stock: "",
+    imageVariant: "",
   });
 
   useEffect(() => {
@@ -60,20 +116,31 @@ const ProductCard = () => {
 
   const handleCreateVariant = async (e) => {
     e.preventDefault();
+    if (!imageFile) {
+      toast.error("Please upload a product image");
+      return;
+    }
+
     setSubmitting(true);
     try {
+      const imageUrl = await handleImageUpload();
+
+      if (!imageUrl) return;
       const payload = {
         ...newVariant,
         productId: id,
         color: newVariant.color.split(",").map((c) => c.trim()),
         price: parseFloat(newVariant.price),
         stock: parseInt(newVariant.stock),
+        imageVariant: imageUrl,
       };
 
       await createVariant(payload);
       toast.success("Variant added successfully");
       setShowVariantForm(false);
       setNewVariant({ size: "", color: "", price: "", stock: "" });
+      setImageFile(null);
+      setImagePreview(null);
       fetchProduct();
     } catch (error) {
       console.error("Error creating variant:", error);
@@ -240,18 +307,18 @@ const ProductCard = () => {
 
       {/* Variants Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="border-b border-gray-100 bg-gray-50/50 px-4 py-4 md:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <Layers size={20} className="text-[#cc1f69]" />
               Product Variants
             </h3>
             <button
               onClick={() => setShowVariantForm(!showVariantForm)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 w-full sm:w-auto ${
                 showVariantForm
-                  ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  : "bg-[#cc1f69] text-white hover:bg-[#a91853]"
+                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-[#cc1f69] text-white hover:bg-[#a91853] shadow-sm hover:shadow"
               }`}
             >
               {showVariantForm ? <X size={18} /> : <Plus size={18} />}
@@ -262,190 +329,283 @@ const ProductCard = () => {
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {/* Add Variant Form */}
           {showVariantForm && (
-            <form
-              onSubmit={handleCreateVariant}
-              className="mb-8 bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border border-gray-200 shadow-sm"
-            >
-              <h4 className="text-base font-medium mb-4 text-gray-700 flex items-center gap-2">
-                <Plus size={18} className="text-green-600" />
-                New Variant Details
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-600">
-                    Size <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="size"
-                    value={newVariant.size}
-                    onChange={handleVariantChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all"
-                    placeholder="e.g., M, XL, 42"
-                  />
+            <div className="mb-8 bg-gray-50/50 p-4 md:p-6 rounded-xl border border-gray-200/60 shadow-inner">
+              <form onSubmit={handleCreateVariant}>
+                <h4 className="text-base font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                    <Plus size={14} className="text-green-600" />
+                  </div>
+                  New Variant Details
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Size <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="size"
+                      value={newVariant.size}
+                      onChange={handleVariantChange}
+                      required
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
+                      placeholder="e.g., M, XL, 42"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Colors{" "}
+                      <span className="text-gray-400 font-normal normal-case">
+                        (comma separated)
+                      </span>{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="color"
+                      value={newVariant.color}
+                      onChange={handleVariantChange}
+                      required
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
+                      placeholder="e.g., Red, Blue, Green"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Price ($) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-400 text-sm">$</span>
+                      </div>
+                      <input
+                        type="number"
+                        name="price"
+                        step="0.01"
+                        min="0"
+                        value={newVariant.price}
+                        onChange={handleVariantChange}
+                        required
+                        className="w-full pl-7 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Stock <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="stock"
+                      min="0"
+                      value={newVariant.stock}
+                      onChange={handleVariantChange}
+                      required
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      Variant Image <span className="text-red-500">*</span>
+                    </label>
+
+                    {!imagePreview ? (
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 hover:border-[#cc1f69]/50 transition-all group">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <div className="p-2 bg-gray-100 rounded-full mb-2 group-hover:bg-[#cc1f69]/10 transition-colors">
+                            <FiUpload className="w-5 h-5 text-gray-400 group-hover:text-[#cc1f69]" />
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            <span className="font-semibold text-[#cc1f69]">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden" // ✅ Disable if no category selected
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                    ) : (
+                      <div className="relative w-full sm:w-48 h-48 rounded-xl overflow-hidden border border-gray-200 shadow-sm group">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="bg-white/90 text-red-500 p-2 rounded-full hover:bg-white hover:scale-110 transition-all shadow-lg"
+                          >
+                            <FiX className="w-5 h-5" />
+                          </button>
+                        </div>
+                        {uploading && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <p className="text-white text-xs font-medium">
+                                Uploading...
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-600">
-                    Colors (comma separated)
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="color"
-                    value={newVariant.color}
-                    onChange={handleVariantChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all"
-                    placeholder="e.g., Red, Blue, Green"
-                  />
+                <div className="mt-6 flex justify-end pt-4 border-t border-gray-200/60">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex items-center gap-2 bg-[#cc1f69] text-white px-6 py-2.5 rounded-lg hover:bg-[#a91853] transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-sm hover:shadow-md font-medium text-sm"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save size={18} />
+                        <span>Save Variant</span>
+                      </>
+                    )}
+                  </button>
                 </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-600">
-                    Price ($) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    step="0.01"
-                    min="0"
-                    value={newVariant.price}
-                    onChange={handleVariantChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-600">
-                    Stock <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    min="0"
-                    value={newVariant.stock}
-                    onChange={handleVariantChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                >
-                  <Save size={18} />
-                  {submitting ? "Saving..." : "Save Variant"}
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           )}
 
           {/* Variants Table */}
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Size
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Color
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Stock
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {product.ProductVariants &&
-                product.ProductVariants.length > 0 ? (
-                  product.ProductVariants.map((variant, index) => (
-                    <tr
-                      key={variant._id}
-                      className="hover:bg-gray-50/80 transition-colors group"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900">
-                          {variant.size}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {Array.isArray(variant.color) ? (
-                            variant.color.map((c, i) => (
-                              <span
-                                key={i}
-                                className="inline-block w-5 h-5 rounded-full border-2 border-black shadow-sm"
-                                style={{
-                                  backgroundColor: c.toLowerCase(),
-                                }}
-                                title={c}
-                              ></span>
-                            ))
-                          ) : (
-                            <span
-                              className="inline-block w-5 h-5 rounded-full border-2 border-black shadow-sm"
-                              style={{
-                                backgroundColor: variant.color.toLowerCase(),
-                              }}
-                              title={variant.color}
-                            ></span>
-                          )}
-                          <span className="text-sm text-gray-700">
-                            {Array.isArray(variant.color)
-                              ? variant.color.join(", ")
-                              : variant.color}
+          <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50/80">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Size
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Color
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Stock
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {product.ProductVariants &&
+                  product.ProductVariants.length > 0 ? (
+                    product.ProductVariants.map((variant, index) => (
+                      <tr
+                        key={variant._id}
+                        className="hover:bg-gray-50/50 transition-colors group"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center justify-center min-w-[2.5rem] h-8 px-2 rounded bg-gray-100 text-sm font-medium text-gray-700 border border-gray-200">
+                            {variant.size}
                           </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {Array.isArray(variant.color) ? (
+                              variant.color.map((c, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-full border border-gray-100"
+                                >
+                                  <span
+                                    className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
+                                    style={{ backgroundColor: c.toLowerCase() }}
+                                  ></span>
+                                  <span className="text-xs text-gray-600 font-medium">
+                                    {c}
+                                  </span>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
+                                <span
+                                  className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
+                                  style={{
+                                    backgroundColor:
+                                      variant.color.toLowerCase(),
+                                  }}
+                                ></span>
+                                <span className="text-xs text-gray-600 font-medium">
+                                  {variant.color}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-semibold text-gray-900">
+                            ${parseFloat(variant.price).toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                              variant.stock > 10
+                                ? "bg-green-50 text-green-700 border-green-100"
+                                : variant.stock > 0
+                                  ? "bg-yellow-50 text-yellow-700 border-yellow-100"
+                                  : "bg-red-50 text-red-700 border-red-100"
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                variant.stock > 10
+                                  ? "bg-green-500"
+                                  : variant.stock > 0
+                                    ? "bg-yellow-500"
+                                    : "bg-red-500"
+                              }`}
+                            ></span>
+                            {variant.stock > 0
+                              ? `${variant.stock} in stock`
+                              : "Out of stock"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-16 text-center">
+                        <div className="flex flex-col items-center justify-center space-y-3">
+                          <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center">
+                            <Layers size={24} className="text-gray-300" />
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm font-medium text-gray-900">
+                              No variants found for this product
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Add a variant to manage stock and prices
+                            </p>
+                          </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-green-600">
-                          ${parseFloat(variant.price).toFixed(2)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`text-sm font-medium ${
-                            variant.stock > 10
-                              ? "text-green-600"
-                              : variant.stock > 0
-                                ? "text-yellow-600"
-                                : "text-red-600"
-                          }`}
-                        >
-                          {variant.stock} units
-                        </span>
-                      </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center space-y-3">
-                        <Layers size={40} className="text-gray-300" />
-                        <p className="text-sm text-gray-500">
-                          No variants found for this product
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Click "Add Variant" to create your first variant
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

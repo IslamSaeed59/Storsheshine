@@ -38,6 +38,13 @@ export const uploadCategoryImage = (imageData) =>
     },
   });
 
+export const uploadVariantImage = (imageData) =>
+  apiClient.post("/upload/variantImage", imageData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
 /*////////////////////
 Auth
 ///////////////*/

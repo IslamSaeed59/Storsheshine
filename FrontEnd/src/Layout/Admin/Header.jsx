@@ -7,7 +7,7 @@ const Header = ({ title, buttonText, showButton = true, navigation }) => {
   const navigate = useNavigate();
   return (
     <div
-      className={`bg-white rounded-xl Playwrite shadow-md m-4 p-5 border-b border-gray-200`}
+      className={`bg-white rounded-xl  shadow-md m-4 p-5 border-b border-gray-200`}
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">

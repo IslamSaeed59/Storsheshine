@@ -191,13 +191,14 @@ exports.deleteCategory = asyncHandler(async (req, res) => {
 });
 
 exports.createProductVariant = asyncHandler(async (req, res) => {
-  const { productId, size, color, price, stock } = req.body;
+  const { productId, size, color, price, stock, imageVariant } = req.body;
   const variant = await ProductVariant.create({
     productId,
     size,
     color,
     price,
     stock,
+    imageVariant,
   });
   res.status(201).json(variant);
 });

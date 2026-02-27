@@ -67,6 +67,30 @@ router.post("/", parser.single("productImage"), async (req, res) => {
   }
 });
 
+// ✅ Upload Product Variant Image
+router.post(
+  "/variantImage",
+  parser.single("variantImage"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "Please upload a file." });
+
+      const categoryName = req.body.categoryName || "uncategorized";
+
+      res.status(200).json({
+        message: "Image uploaded successfully",
+        imageUrl: req.file.path, // Cloudinary URL
+        category: categoryName,
+        filename: req.file.filename,
+      });
+    } catch (error) {
+      console.error("❌ Upload error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  },
+);
+
 // ✅ Upload Category Image
 router.post("/categories", parser.single("categoryImage"), async (req, res) => {
   try {

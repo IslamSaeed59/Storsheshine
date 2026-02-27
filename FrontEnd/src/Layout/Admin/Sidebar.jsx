@@ -17,7 +17,7 @@ const Sidebar = ({ onClose }) => {
   const activeNavLinkClasses = "bg-[#cc1f69] text-white";
 
   return (
-    <div className="flex min-h-screen w-64 flex-col bg-white shadow-lg Playwrite">
+    <div className="flex min-h-screen w-64 flex-col bg-white shadow-lg ">
       <div className="flex items-center justify-center p-6">
         <Link
           to="/admin"

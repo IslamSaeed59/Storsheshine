@@ -19,6 +19,9 @@ const productVariantSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
   },
+  imageVariant: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("ProductVariant", productVariantSchema);

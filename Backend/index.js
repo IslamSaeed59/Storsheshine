@@ -109,29 +109,6 @@ const PORT = process.env.PORT || 9000;
     // 1. Authenticate the database connection
     await connectDB(); // connectDB already logs this
 
-    // ✅ Seed Default Admin
-    const adminEmail = "Eslam@gmail.com";
-    const adminExists = await User.findOne({ email: adminEmail });
-
-    if (!adminExists) {
-      const adminProfile = await Profile.create({
-        Address: "Admin HQ",
-        DOB: new Date("1990-01-01"),
-      });
-
-      const adminUser = await User.create({
-        name: "Eslam Saeed",
-        email: adminEmail,
-        password: "123456", // Will be hashed by pre-save hook
-        role: "admin",
-        profile: adminProfile._id,
-      });
-
-      adminProfile.user = adminUser._id;
-      await adminProfile.save();
-      console.log("👤 Default Admin Created: Eslam Saeed");
-    }
-
     // 3. Start the Express server
     server.listen(PORT, () => {
       console.log(
