@@ -57,8 +57,8 @@ const uploadToCloudinary = (fileBuffer, folder, publicId) => {
 ============================== */
 
 router.post(
-  "/variantImage",
-  parser.single("variantImage"),
+  "/imageVariant",
+  parser.single("imageVariant"),
   async (req, res) => {
     try {
       if (!req.file)
