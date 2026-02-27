@@ -47,26 +47,6 @@ const parser = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
-// ✅ Upload Product Image
-router.post("/", parser.single("productImage"), async (req, res) => {
-  try {
-    if (!req.file)
-      return res.status(400).json({ message: "Please upload a file." });
-
-    const categoryName = req.body.categoryName || "uncategorized";
-
-    res.status(200).json({
-      message: "Image uploaded successfully",
-      imageUrl: req.file.path, // Cloudinary URL
-      category: categoryName,
-      filename: req.file.filename,
-    });
-  } catch (error) {
-    console.error("❌ Upload error:", error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
 // ✅ Upload Product Variant Image
 router.post(
   "/variantImage",
@@ -102,6 +82,25 @@ router.post("/categories", parser.single("categoryImage"), async (req, res) => {
     res.status(200).json({
       message: "Category image uploaded successfully",
       imageUrl: req.file.path,
+      category: categoryName,
+      filename: req.file.filename,
+    });
+  } catch (error) {
+    console.error("❌ Upload error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.post("/", parser.single("productImage"), async (req, res) => {
+  try {
+    if (!req.file)
+      return res.status(400).json({ message: "Please upload a file." });
+
+    const categoryName = req.body.categoryName || "uncategorized";
+
+    res.status(200).json({
+      message: "Image uploaded successfully",
+      imageUrl: req.file.path, // Cloudinary URL
       category: categoryName,
       filename: req.file.filename,
     });
