@@ -64,7 +64,7 @@ const ProductCard = () => {
 
     const formData = new FormData();
 
-    formData.append("variantImage", imageFile);
+    formData.append("imageVariant", imageFile);
 
     try {
       setUploading(true);
