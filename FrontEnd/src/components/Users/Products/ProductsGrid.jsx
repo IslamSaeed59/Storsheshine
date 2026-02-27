@@ -53,7 +53,7 @@ const ProductsGrid = ({ products }) => {
             <img
               src={product.image || "/api/placeholder/400/400"}
               alt={product.name}
-              className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
+              className="w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700"
               loading="lazy"
             />
 

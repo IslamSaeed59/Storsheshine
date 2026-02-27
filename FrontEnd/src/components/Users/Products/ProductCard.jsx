@@ -139,12 +139,18 @@ const ProductCard = ({ product }) => {
             {/* Main Image */}
             <div className="bg-gray-50 rounded-2xl flex items-center justify-center aspect-square overflow-hidden group cursor-pointer">
               <img
-                src={image || "/api/placeholder/400/400"}
+                src={
+                  selectedVariant?.imageVariant ||
+                  image ||
+                  "/api/placeholder/400/400"
+                }
                 alt={name}
-                className="w-full h-full r transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-contain transition-opacity duration-300"
                 onError={(e) => {
                   e.target.src = "/api/placeholder/400/400";
+                  e.target.onerror = null;
                 }}
+                loading="lazy"
               />
             </div>
           </div>

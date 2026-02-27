@@ -488,69 +488,74 @@ const ProductCard = () => {
           )}
 
           {/* Variants Table */}
-          <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50/80">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Size
+                <thead>
+                  <tr className="bg-gray-50/90 border-b border-gray-200">
+                    <th className="px-6 py-4 text-left">
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Size
+                      </span>
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Color
+                    <th className="px-6 py-4 text-left">
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Color
+                      </span>
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Price
+                    <th className="px-6 py-4 text-left">
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Price
+                      </span>
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Stock
+                    <th className="px-6 py-4 text-left">
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Stock
+                      </span>
+                    </th>
+                    <th className="px-6 py-4 text-left">
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Image
+                      </span>
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100">
                   {product.ProductVariants &&
                   product.ProductVariants.length > 0 ? (
                     product.ProductVariants.map((variant, index) => (
                       <tr
                         key={variant._id}
-                        className="hover:bg-gray-50/50 transition-colors group"
+                        className="hover:bg-gray-50/50 transition-colors duration-150"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center justify-center min-w-[2.5rem] h-8 px-2 rounded bg-gray-100 text-sm font-medium text-gray-700 border border-gray-200">
-                            {variant.size}
-                          </span>
+                          <div className="flex items-center">
+                            <span className="inline-flex items-center justify-center min-w-[3rem] h-8 px-2 bg-gray-100 rounded-md text-sm font-medium text-gray-700">
+                              {variant.size}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {Array.isArray(variant.color) ? (
-                              variant.color.map((c, i) => (
-                                <div
-                                  key={i}
-                                  className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-full border border-gray-100"
-                                >
-                                  <span
-                                    className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
-                                    style={{ backgroundColor: c.toLowerCase() }}
-                                  ></span>
-                                  <span className="text-xs text-gray-600 font-medium">
-                                    {c}
-                                  </span>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
+                          <div className="flex flex-wrap gap-2">
+                            {(Array.isArray(variant.color)
+                              ? variant.color
+                              : [variant.color]
+                            ).map((color, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 rounded-md border border-gray-200"
+                              >
                                 <span
-                                  className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
+                                  className="w-3.5 h-3.5 rounded-full ring-1 ring-gray-200"
                                   style={{
-                                    backgroundColor:
-                                      variant.color.toLowerCase(),
+                                    backgroundColor: color.toLowerCase(),
                                   }}
-                                ></span>
-                                <span className="text-xs text-gray-600 font-medium">
-                                  {variant.color}
+                                />
+                                <span className="text-xs font-medium text-gray-700">
+                                  {color}
                                 </span>
                               </div>
-                            )}
+                            ))}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -560,12 +565,12 @@ const ProductCard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
                               variant.stock > 10
-                                ? "bg-green-50 text-green-700 border-green-100"
+                                ? "bg-green-50 text-green-700 ring-1 ring-green-200"
                                 : variant.stock > 0
-                                  ? "bg-yellow-50 text-yellow-700 border-yellow-100"
-                                  : "bg-red-50 text-red-700 border-red-100"
+                                  ? "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200"
+                                  : "bg-red-50 text-red-700 ring-1 ring-red-200"
                             }`}
                           >
                             <span
@@ -576,29 +581,37 @@ const ProductCard = () => {
                                     ? "bg-yellow-500"
                                     : "bg-red-500"
                               }`}
-                            ></span>
+                            />
                             {variant.stock > 0
                               ? `${variant.stock} in stock`
                               : "Out of stock"}
                           </span>
                         </td>
+                        <td className="px-6 py-4">
+                          <div className="w-14 h-14 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                            <img
+                              src={variant.imageVariant}
+                              alt={`${variant.size} ${Array.isArray(variant.color) ? variant.color.join(", ") : variant.color}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="px-6 py-16 text-center">
-                        <div className="flex flex-col items-center justify-center space-y-3">
-                          <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center">
-                            <Layers size={24} className="text-gray-300" />
+                      <td colSpan="5" className="px-6 py-12">
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <div className="w-16 h-16 mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Layers size={28} className="text-gray-400" />
                           </div>
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-gray-900">
-                              No variants found for this product
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Add a variant to manage stock and prices
-                            </p>
-                          </div>
+                          <h3 className="text-sm font-medium text-gray-900 mb-1">
+                            No variants found
+                          </h3>
+                          <p className="text-sm text-gray-500 max-w-sm">
+                            Add a variant to manage stock levels, pricing, and
+                            product images.
+                          </p>
                         </div>
                       </td>
                     </tr>
