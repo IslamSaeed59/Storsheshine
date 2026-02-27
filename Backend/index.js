@@ -36,7 +36,7 @@ app.use(
 );
 
 // السماح بالـ preflight لكل الراوتس
-app.options("*", cors());
+app.options("/*", cors());
 app.use(express.json());
 
 // Create HTTP server and initialize Socket.IO
