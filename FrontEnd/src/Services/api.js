@@ -40,7 +40,7 @@ export const uploadCategoryImage = (imageData) =>
   });
 
 export const uploadVariantImage = (imageData) =>
-  apiClient.post("/upload/variantImage", imageData, {
+  apiClient.post("/upload/imageVariant", imageData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
