@@ -124,4 +124,9 @@ router.use((err, req, res, next) => {
   next();
 });
 
+router.post("/test123", (req, res) => {
+  console.log("hit test123 route");
+  res.json({ ok: true });
+});
+
 module.exports = router;
