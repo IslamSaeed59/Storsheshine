@@ -194,6 +194,7 @@ const CreatProduct = () => {
 
       await createProduct(payload);
       toast.success("Product created successfully");
+      console.log("Product created with payload:", payload); // Debug
       navigate("/admin/products");
     } catch (error) {
       console.error(error);
