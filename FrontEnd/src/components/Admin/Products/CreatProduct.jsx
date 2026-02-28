@@ -22,9 +22,9 @@ const CreatProduct = () => {
   const [categories, setCategories] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [variantImageFile, setVariantImageFile] = useState(null);
   const [variantImagePreview, setVariantImagePreview] = useState(null);
-  const [uploading, setUploading] = useState(false);
 
   // ✅ Watch categoryId to get category name
   const selectedCategoryId = watch("categoryId");
@@ -156,6 +156,7 @@ const CreatProduct = () => {
         return;
       }
 
+      // ✅ Validate category selected before upload
       if (!data.categoryId) {
         toast.error("Please select a category first");
         return;
@@ -164,24 +165,35 @@ const CreatProduct = () => {
       const imageUrls = await handleImageUpload();
       if (!imageUrls) return;
 
-      // ✅ الباكند بيستقبل بس الفيلدات دي:
+      // ✅ Upload variant image if exists
+      let variantImageUrl = "";
+      if (variantImageFile) {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("imageVariant", variantImageFile);
+        try {
+          const res = await uploadVariantImage(formData);
+          variantImageUrl = res.data.imageUrl;
+        } catch (error) {
+          console.error("Variant image upload failed", error);
+          toast.error("Failed to upload variant image");
+          return;
+        }
+      }
+
       const payload = {
-        name: data.name,
-        description: data.description,
+        ...data,
         basePrice: parseFloat(data.basePrice),
         price: parseFloat(data.price),
         stock: parseInt(data.stock),
         categoryId: data.categoryId,
-        brand: data.brand,
-        size: data.size,
         color: data.color.split(",").map((c) => c.trim()),
         images: imageUrls,
+        imageVariant: variantImageUrl,
       };
-      // ❌ شلنا imageVariant لأن الباكند مش بيستخدمه
 
       await createProduct(payload);
       toast.success("Product created successfully");
-      console.log("Product created with payload:", payload);
       navigate("/admin/products");
     } catch (error) {
       console.error(error);
@@ -190,6 +202,7 @@ const CreatProduct = () => {
       setUploading(false);
     }
   };
+
   return (
     <div className="max-w-4xl mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
