@@ -61,13 +61,24 @@ const ProductCard = ({ product }) => {
 
   // Extract unique sizes/memories from variants
   const memoryOptions = ProductVariants
-    ? [...new Set(ProductVariants.map((v) => v.size))]
+    ? [
+        ...new Set(
+          ProductVariants.map((v) => v.size).filter(
+            (s) => s != null && s !== "",
+          ),
+        ),
+      ]
     : [];
 
-  const colorOptions =
-    ProductVariants && selectedVariant
-      ? ProductVariants.filter((v) => v.size === selectedVariant.size)
-      : [];
+  const uniqueColors = ProductVariants
+    ? [
+        ...new Set(
+          ProductVariants.flatMap((v) =>
+            Array.isArray(v.color) ? v.color : [v.color],
+          ),
+        ),
+      ]
+    : [];
 
   const handleIncrement = () => {
     if (selectedVariant && quantity >= selectedVariant.stock) return;
@@ -80,9 +91,17 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  const handleAddToCart = () => {
-    console.log("Add to cart clicked", { product, selectedVariant, quantity });
-  };
+  const displayImage =
+    (selectedColor &&
+      ProductVariants?.find(
+        (v) =>
+          (Array.isArray(v.color)
+            ? v.color.includes(selectedColor)
+            : v.color === selectedColor) && v.imageVariant,
+      )?.imageVariant) ||
+    selectedVariant?.imageVariant ||
+    image ||
+    "/api/placeholder/400/400";
 
   return (
     <div className="min-h-screen bg-white">
@@ -126,24 +145,10 @@ const ProductCard = ({ product }) => {
               )}
             </div>
 
-            {/* Action Buttons (Wishlist/Share) */}
-            <div className="absolute top-4 right-4 z-10 flex flex-col gap-3">
-              <button className="p-3 bg-white rounded-full shadow-md hover:bg-pink-50 text-gray-600 hover:text-pink-500 transition-all duration-300 group">
-                <Heart size={20} className="group-hover:fill-pink-500" />
-              </button>
-              <button className="p-3 bg-white rounded-full shadow-md hover:bg-pink-50 text-gray-600 hover:text-pink-500 transition-all duration-300">
-                <Share2 size={20} />
-              </button>
-            </div>
-
             {/* Main Image */}
             <div className="bg-gray-50 rounded-2xl flex items-center justify-center aspect-square overflow-hidden group cursor-pointer">
               <img
-                src={
-                  selectedVariant?.imageVariant ||
-                  image ||
-                  "/api/placeholder/400/400"
-                }
+                src={displayImage}
                 alt={name}
                 className="w-full h-full object-contain transition-opacity duration-300"
                 onError={(e) => {
@@ -215,6 +220,67 @@ const ProductCard = ({ product }) => {
               </div>
             </div>
 
+            {/* Color Selection */}
+            {uniqueColors.length > 0 && (
+              <div className="space-y-3">
+                <span className="text-sm font-medium text-gray-700">
+                  Choose color
+                </span>
+
+                <div className="flex flex-wrap gap-3">
+                  {uniqueColors.map((color, idx) => {
+                    const variantsWithColor = ProductVariants.filter((v) =>
+                      Array.isArray(v.color)
+                        ? v.color.includes(color)
+                        : v.color === color,
+                    );
+                    const isOutOfStock = !variantsWithColor.some(
+                      (v) => v.stock > 0,
+                    );
+                    const isSelected = selectedColor === color;
+
+                    return (
+                      <button
+                        key={idx}
+                        disabled={isOutOfStock}
+                        title={`${color || "Default"}${isOutOfStock ? " (Out of Stock)" : ""}`}
+                        onClick={() => {
+                          let variant = variantsWithColor.find(
+                            (v) => v.size === selectedVariant?.size,
+                          );
+                          if (!variant || variant.stock <= 0) {
+                            variant =
+                              variantsWithColor.find((v) => v.stock > 0) ||
+                              variantsWithColor[0];
+                          }
+                          if (variant) {
+                            setSelectedVariant(variant);
+                            setSelectedColor(color);
+                          }
+                        }}
+                        className={`
+                          w-10 h-10 rounded-full border shadow-sm transition-all relative
+                          ${
+                            isSelected
+                              ? "ring-2 ring-pink-500 ring-offset-2 border-transparent scale-110"
+                              : "border-gray-200 hover:border-gray-300 hover:scale-105"
+                          }
+                          ${isOutOfStock ? "opacity-40 cursor-not-allowed" : ""}
+                        `}
+                        style={{ backgroundColor: color }}
+                      >
+                        {isOutOfStock && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-full h-px bg-gray-500 -rotate-45" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Memory Selection */}
             {memoryOptions.length > 0 && (
               <div className="space-y-3">
@@ -226,26 +292,36 @@ const ProductCard = ({ product }) => {
 
                 <div className="flex flex-wrap gap-2">
                   {memoryOptions.map((memory, idx) => {
-                    const isOutOfStock = !ProductVariants.some(
-                      (v) => v.size === memory && v.stock > 0,
+                    const variant = ProductVariants.find(
+                      (v) =>
+                        v.size === memory &&
+                        (Array.isArray(v.color)
+                          ? v.color.includes(selectedColor)
+                          : v.color === selectedColor),
                     );
+                    const isOutOfStock = !variant || variant.stock <= 0;
                     return (
                       <button
                         key={idx}
                         disabled={isOutOfStock}
                         title={isOutOfStock ? "Out of Stock" : ""}
                         onClick={() => {
-                          const variant =
-                            ProductVariants.find(
-                              (v) => v.size === memory && v.stock > 0,
-                            ) || ProductVariants.find((v) => v.size === memory);
                           if (variant) {
                             setSelectedVariant(variant);
-                            setSelectedColor(
-                              Array.isArray(variant.color)
-                                ? variant.color[0]
-                                : variant.color,
-                            );
+                          } else {
+                            const anyVariant =
+                              ProductVariants.find(
+                                (v) => v.size === memory && v.stock > 0,
+                              ) ||
+                              ProductVariants.find((v) => v.size === memory);
+                            if (anyVariant) {
+                              setSelectedVariant(anyVariant);
+                              setSelectedColor(
+                                Array.isArray(anyVariant.color)
+                                  ? anyVariant.color[0]
+                                  : anyVariant.color,
+                              );
+                            }
                           }
                         }}
                         className={`
@@ -266,59 +342,6 @@ const ProductCard = ({ product }) => {
                       </button>
                     );
                   })}
-                </div>
-              </div>
-            )}
-
-            {/* Color Selection */}
-            {colorOptions.length > 0 && (
-              <div className="space-y-3">
-                <span className="text-sm font-medium text-gray-700">
-                  Choose color
-                </span>
-
-                <div className="flex flex-wrap gap-3">
-                  {colorOptions
-                    .flatMap((variant) => {
-                      const colors = Array.isArray(variant.color)
-                        ? variant.color
-                        : [variant.color];
-                      return colors.map((color) => ({ variant, color }));
-                    })
-                    .map(({ variant, color }, idx) => {
-                      const isOutOfStock = variant.stock === 0;
-                      const isSelected =
-                        selectedVariant?.id === variant.id &&
-                        selectedColor === color;
-
-                      return (
-                        <button
-                          key={idx}
-                          disabled={isOutOfStock}
-                          title={`${color || "Default"}${isOutOfStock ? " (Out of Stock)" : ""}`}
-                          onClick={() => {
-                            setSelectedVariant(variant);
-                            setSelectedColor(color);
-                          }}
-                          className={`
-                          w-10 h-10 rounded-full border shadow-sm transition-all relative
-                          ${
-                            isSelected
-                              ? "ring-2 ring-pink-500 ring-offset-2 border-transparent scale-110"
-                              : "border-gray-200 hover:border-gray-300 hover:scale-105"
-                          }
-                          ${isOutOfStock ? "opacity-40 cursor-not-allowed" : ""}
-                        `}
-                          style={{ backgroundColor: color }}
-                        >
-                          {isOutOfStock && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-full h-px bg-gray-500 -rotate-45" />
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
                 </div>
               </div>
             )}

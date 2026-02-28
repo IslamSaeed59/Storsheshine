@@ -19,8 +19,8 @@ const CreatProduct = () => {
   } = useForm();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [uploading, setUploading] = useState(false);
 
   // ✅ Watch categoryId to get category name
@@ -51,47 +51,64 @@ const CreatProduct = () => {
 
   // ✅ Handle image selection
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+    if (imageFiles.length + files.length > 4) {
+      toast.error("You can only upload a maximum of 4 images");
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size must be less than 5MB");
-      return;
-    }
+    const newFiles = [];
+    const newPreviews = [];
 
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+    files.forEach((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`Skipped ${file.name}: Not an image file`);
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`Skipped ${file.name}: Size must be less than 5MB`);
+        return;
+      }
+
+      newFiles.push(file);
+      newPreviews.push(URL.createObjectURL(file));
+    });
+
+    setImageFiles((prev) => [...prev, ...newFiles]);
+    setImagePreviews((prev) => [...prev, ...newPreviews]);
   };
 
   // ✅ Remove selected image
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+  const handleRemoveImage = (index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   // ✅ Upload image with category name
   const handleImageUpload = async () => {
-    if (!imageFile) return null;
+    if (imageFiles.length === 0) return null;
 
     const categoryName = getSelectedCategoryName();
-
     console.log("📤 Uploading to category:", categoryName); // Debug
-
-    const formData = new FormData();
-    // ✅ Append category name FIRST (though order doesn't matter with memory storage)
-    formData.append("categoryName", categoryName);
-    formData.append("productImage", imageFile);
 
     try {
       setUploading(true);
-      const response = await uploadImage(formData);
-      console.log("✅ Upload response:", response.data); // Debug
-      return response.data.imageUrl;
+      const uploadPromises = imageFiles.map((file) => {
+        const formData = new FormData();
+        formData.append("categoryName", categoryName);
+        formData.append("productImage", file);
+        return uploadImage(formData).then((res) => res.data.imageUrl);
+      });
+
+      const imageUrls = await Promise.all(uploadPromises);
+      console.log("✅ Upload response:", imageUrls); // Debug
+      return imageUrls;
     } catch (error) {
       console.error("❌ Upload error:", error);
       toast.error("Image upload failed");
@@ -103,8 +120,8 @@ const CreatProduct = () => {
 
   const onSubmit = async (data) => {
     try {
-      if (!imageFile) {
-        toast.error("Please upload a product image");
+      if (imageFiles.length === 0) {
+        toast.error("Please upload at least one product image");
         return;
       }
 
@@ -114,8 +131,8 @@ const CreatProduct = () => {
         return;
       }
 
-      const imageUrl = await handleImageUpload();
-      if (!imageUrl) return;
+      const imageUrls = await handleImageUpload();
+      if (!imageUrls) return;
 
       const payload = {
         ...data,
@@ -124,7 +141,7 @@ const CreatProduct = () => {
         stock: parseInt(data.stock),
         categoryId: data.categoryId,
         color: data.color.split(",").map((c) => c.trim()),
-        image: imageUrl,
+        image: imageUrls,
       };
 
       await createProduct(payload);
@@ -257,20 +274,20 @@ const CreatProduct = () => {
         {/* ✅ Image Upload Section */}
         <div className="col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Product Image
+            Product Images (Max 4)
           </label>
 
           {/* ✅ Show category warning if not selected */}
           {!selectedCategoryId && (
             <p className="text-yellow-500 text-xs mb-2">
-              ⚠️ Please select a category before uploading an image
+              ⚠️ Please select a category before uploading images
             </p>
           )}
 
           {/* ✅ Show selected category folder */}
           {selectedCategoryId && (
             <p className="text-green-600 text-xs mb-2">
-              📁 Image will be saved in:{" "}
+              📁 Images will be saved in:{" "}
               <span className="font-semibold">
                 /uploads/
                 {getSelectedCategoryName().toLowerCase().replace(/\s+/g, "-")}/
@@ -278,55 +295,58 @@ const CreatProduct = () => {
             </p>
           )}
 
-          {!imagePreview ? (
-            <label
-              className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg transition-all ${
-                selectedCategoryId
-                  ? "border-gray-300 cursor-pointer hover:border-[#cc1f69] hover:bg-pink-50"
-                  : "border-gray-200 cursor-not-allowed bg-gray-50 opacity-60"
-              }`}
-            >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <FiUpload className="w-10 h-10 text-gray-400 mb-3" />
-                <p className="mb-2 text-sm text-gray-500">
-                  <span className="font-semibold text-[#cc1f69]">
-                    Click to upload
-                  </span>{" "}
-                  or drag and drop
-                </p>
-                <p className="text-xs text-gray-400">
-                  PNG, JPG, WEBP up to 5MB
-                </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {imagePreviews.map((src, index) => (
+              <div
+                key={index}
+                className="relative h-32 rounded-lg overflow-hidden border border-gray-200 group"
+              >
+                <img
+                  src={src}
+                  alt={`Preview ${index}`}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <FiX className="w-4 h-4" />
+                </button>
               </div>
+            ))}
+
+            {imagePreviews.length < 4 && (
+              <label
+                className={`flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg transition-all ${
+                  selectedCategoryId
+                    ? "border-gray-300 cursor-pointer hover:border-[#cc1f69] hover:bg-pink-50"
+                    : "border-gray-200 cursor-not-allowed bg-gray-50 opacity-60"
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center">
+                  <FiUpload className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-xs text-gray-500 text-center px-2">
+                    Upload Image
+                  </span>
+                </div>
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
+                multiple
                 disabled={!selectedCategoryId} // ✅ Disable if no category selected
                 onChange={handleImageChange}
               />
             </label>
-          ) : (
-            <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full h-full object-cover"
-              />
-              <button
-                type="button"
-                onClick={handleRemoveImage}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-              >
-                <FiX className="w-4 h-4" />
-              </button>
-              {uploading && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                  <p className="text-white font-semibold animate-pulse">
-                    Uploading...
-                  </p>
-                </div>
-              )}
+            )}
+          </div>
+
+          {uploading && (
+            <div className="mt-2 text-center">
+              <p className="text-[#cc1f69] text-sm font-semibold animate-pulse">
+                Uploading images...
+              </p>
             </div>
           )}
         </div>

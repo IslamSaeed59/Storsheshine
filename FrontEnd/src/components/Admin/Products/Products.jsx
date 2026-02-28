@@ -190,7 +190,7 @@ const Products = () => {
                         <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow duration-200">
                           {product.image ? (
                             <img
-                              src={product.image}
+                              src={Array.isArray(product.image) ? product.image[0] : product.image}
                               className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
                               alt={product.name}
                               onError={(e) => {

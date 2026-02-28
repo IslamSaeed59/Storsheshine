@@ -21,9 +21,11 @@ const productSchema = new mongoose.Schema(
     brand: {
       type: String,
     },
-    image: {
-      type: String,
-    },
+    image: [
+      {
+        type: String,
+      },
+    ],
     isBestseller: {
       type: Boolean,
       default: false,

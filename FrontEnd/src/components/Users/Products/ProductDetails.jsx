@@ -24,7 +24,7 @@ const ProductDetails = () => {
     return <div>Product not found</div>;
   }
 
-  console.log("Product details:", product);
+
   return (
     <div>
       <ProductCard product={product} />

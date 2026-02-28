@@ -33,6 +33,7 @@ const ProductCard = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedMainImage, setSelectedMainImage] = useState(null);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -97,6 +98,14 @@ const ProductCard = () => {
       const response = await getProductById(id);
       console.log("Product Response:", response.data);
       setProduct(response.data);
+      // Set initial main image
+      if (response.data.image) {
+        setSelectedMainImage(
+          Array.isArray(response.data.image)
+            ? response.data.image[0]
+            : response.data.image,
+        );
+      }
       setImageError(false);
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -230,9 +239,9 @@ const ProductCard = () => {
             <div className="lg:col-span-1">
               <div className="sticky top-6">
                 <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 border-2 border-gray-200 shadow-sm">
-                  {product.image && !imageError ? (
+                  {selectedMainImage && !imageError ? (
                     <img
-                      src={product.image}
+                      src={selectedMainImage}
                       alt={product.name}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       onError={handleImageError}
@@ -251,6 +260,24 @@ const ProductCard = () => {
                     </div>
                   )}
                 </div>
+                {/* Thumbnail Gallery */}
+                {Array.isArray(product.image) && product.image.length > 1 && (
+                  <div className="grid grid-cols-4 gap-2 mt-4">
+                    {product.image.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedMainImage(img)}
+                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedMainImage === img ? "border-[#cc1f69] ring-2 ring-[#cc1f69]/20" : "border-gray-200 hover:border-gray-300"}`}
+                      >
+                        <img
+                          src={img}
+                          alt={`Thumbnail ${idx}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
