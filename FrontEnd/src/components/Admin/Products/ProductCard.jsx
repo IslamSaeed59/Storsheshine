@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   getProductById,
   createVariant,
+  deleteVariant,
   uploadVariantImage,
 } from "../../../Services/api";
 import Header from "../../../Layout/Admin/Header";
@@ -18,6 +19,7 @@ import {
   Calendar,
   DollarSign,
   Image as ImageIcon,
+  Trash2,
 } from "lucide-react";
 import { FiUpload, FiX } from "react-icons/fi";
 
@@ -99,11 +101,11 @@ const ProductCard = () => {
       console.log("Product Response:", response.data);
       setProduct(response.data);
       // Set initial main image
-      if (response.data.image) {
+      if (response.data.images) {
         setSelectedMainImage(
-          Array.isArray(response.data.image)
-            ? response.data.image[0]
-            : response.data.image,
+          Array.isArray(response.data.images)
+            ? response.data.images[0]
+            : response.data.images,
         );
       }
       setImageError(false);
@@ -161,6 +163,19 @@ const ProductCard = () => {
 
   const handleImageError = () => {
     setImageError(true);
+  };
+
+  const handleDeleteVariant = async (variantId) => {
+    if (window.confirm("Are you sure you want to delete this variant?")) {
+      try {
+        await deleteVariant(variantId);
+        toast.success("Variant deleted successfully");
+        fetchProduct();
+      } catch (error) {
+        console.error("Error deleting variant:", error);
+        toast.error("Failed to delete variant");
+      }
+    }
   };
 
   if (loading) {
@@ -261,9 +276,9 @@ const ProductCard = () => {
                   )}
                 </div>
                 {/* Thumbnail Gallery */}
-                {Array.isArray(product.image) && product.image.length > 1 && (
+                {Array.isArray(product.images) && product.images.length > 1 && (
                   <div className="grid grid-cols-4 gap-2 mt-4">
-                    {product.image.map((img, idx) => (
+                    {product.images.map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setSelectedMainImage(img)}
@@ -545,6 +560,11 @@ const ProductCard = () => {
                         Image
                       </span>
                     </th>
+                    <th className="px-6 py-4 text-right">
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Actions
+                      </span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -622,6 +642,15 @@ const ProductCard = () => {
                               className="w-full h-full object-cover"
                             />
                           </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleDeleteVariant(variant._id)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                            title="Delete Variant"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         </td>
                       </tr>
                     ))

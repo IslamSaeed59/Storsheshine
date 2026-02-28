@@ -51,11 +51,29 @@ const ProductsGrid = ({ products }) => {
           {/* Image Container */}
           <div className="relative w-full aspect-square overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50">
             <img
-              src={product.image || "/api/placeholder/400/400"}
+              src={
+                (Array.isArray(product.images)
+                  ? product.images[0]
+                  : product.images) ||
+                product.image ||
+                "/api/placeholder/400/400"
+              }
               alt={product.name}
-              className="w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700"
+              className={`w-full h-full object-contain object-center transition-all duration-700 ${
+                Array.isArray(product.images) && product.images.length > 1
+                  ? "group-hover:opacity-0"
+                  : "group-hover:scale-110"
+              }`}
               loading="lazy"
             />
+            {Array.isArray(product.images) && product.images.length > 1 && (
+              <img
+                src={product.images[1]}
+                alt={product.name}
+                className="absolute inset-0 w-full h-full object-contain object-center opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-110"
+                loading="lazy"
+              />
+            )}
 
             {/* Action Buttons - Modern glassmorphism style */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">

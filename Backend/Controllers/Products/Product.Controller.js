@@ -16,7 +16,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
     stock,
     images,
   } = req.body;
-
+  console.log(req.body);
   const product = await Product.create({
     name,
     description,

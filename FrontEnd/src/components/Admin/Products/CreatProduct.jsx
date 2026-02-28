@@ -6,6 +6,7 @@ import {
   createProduct,
   getCategories,
   uploadImage,
+  uploadVariantImage,
 } from "../../../Services/api";
 import axios from "axios";
 import { FiUpload, FiX } from "react-icons/fi";
@@ -21,6 +22,8 @@ const CreatProduct = () => {
   const [categories, setCategories] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [variantImageFile, setVariantImageFile] = useState(null);
+  const [variantImagePreview, setVariantImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   // ✅ Watch categoryId to get category name
@@ -90,6 +93,34 @@ const CreatProduct = () => {
     });
   };
 
+  // ✅ Handle variant image selection
+  const handleVariantImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    setVariantImageFile(file);
+    setVariantImagePreview(URL.createObjectURL(file));
+  };
+
+  // ✅ Remove selected variant image
+  const handleRemoveVariantImage = () => {
+    setVariantImageFile(null);
+    if (variantImagePreview) {
+      URL.revokeObjectURL(variantImagePreview);
+      setVariantImagePreview(null);
+    }
+  };
+
   // ✅ Upload image with category name
   const handleImageUpload = async () => {
     if (imageFiles.length === 0) return null;
@@ -134,6 +165,22 @@ const CreatProduct = () => {
       const imageUrls = await handleImageUpload();
       if (!imageUrls) return;
 
+      // ✅ Upload variant image if exists
+      let variantImageUrl = "";
+      if (variantImageFile) {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("imageVariant", variantImageFile);
+        try {
+          const res = await uploadVariantImage(formData);
+          variantImageUrl = res.data.imageUrl;
+        } catch (error) {
+          console.error("Variant image upload failed", error);
+          toast.error("Failed to upload variant image");
+          return;
+        }
+      }
+
       const payload = {
         ...data,
         basePrice: parseFloat(data.basePrice),
@@ -141,7 +188,8 @@ const CreatProduct = () => {
         stock: parseInt(data.stock),
         categoryId: data.categoryId,
         color: data.color.split(",").map((c) => c.trim()),
-        image: imageUrls,
+        images: imageUrls,
+        imageVariant: variantImageUrl,
       };
 
       await createProduct(payload);
@@ -150,6 +198,8 @@ const CreatProduct = () => {
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "Failed to create product");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -330,15 +380,15 @@ const CreatProduct = () => {
                     Upload Image
                   </span>
                 </div>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                multiple
-                disabled={!selectedCategoryId} // ✅ Disable if no category selected
-                onChange={handleImageChange}
-              />
-            </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  multiple
+                  disabled={!selectedCategoryId} // ✅ Disable if no category selected
+                  onChange={handleImageChange}
+                />
+              </label>
             )}
           </div>
 
@@ -441,6 +491,44 @@ const CreatProduct = () => {
                 <p className="text-red-500 text-xs mt-1">
                   {errors.stock.message}
                 </p>
+              )}
+            </div>
+
+            {/* Variant Image */}
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Variant Image
+              </label>
+              {!variantImagePreview ? (
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <FiUpload className="w-8 h-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">
+                      Click to upload variant image
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleVariantImageChange}
+                  />
+                </label>
+              ) : (
+                <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-200 group">
+                  <img
+                    src={variantImagePreview}
+                    alt="Variant Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveVariantImage}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <FiX className="w-4 h-4" />
+                  </button>
+                </div>
               )}
             </div>
           </div>
