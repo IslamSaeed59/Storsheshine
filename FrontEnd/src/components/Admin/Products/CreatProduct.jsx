@@ -156,7 +156,6 @@ const CreatProduct = () => {
         return;
       }
 
-      // ✅ Validate category selected before upload
       if (!data.categoryId) {
         toast.error("Please select a category first");
         return;
@@ -165,36 +164,24 @@ const CreatProduct = () => {
       const imageUrls = await handleImageUpload();
       if (!imageUrls) return;
 
-      // ✅ Upload variant image if exists
-      let variantImageUrl = "";
-      if (variantImageFile) {
-        setUploading(true);
-        const formData = new FormData();
-        formData.append("imageVariant", variantImageFile);
-        try {
-          const res = await uploadVariantImage(formData);
-          variantImageUrl = res.data.imageUrl;
-        } catch (error) {
-          console.error("Variant image upload failed", error);
-          toast.error("Failed to upload variant image");
-          return;
-        }
-      }
-
+      // ✅ الباكند بيستقبل بس الفيلدات دي:
       const payload = {
-        ...data,
+        name: data.name,
+        description: data.description,
         basePrice: parseFloat(data.basePrice),
         price: parseFloat(data.price),
         stock: parseInt(data.stock),
         categoryId: data.categoryId,
+        brand: data.brand,
+        size: data.size,
         color: data.color.split(",").map((c) => c.trim()),
         images: imageUrls,
-        imageVariant: variantImageUrl,
       };
+      // ❌ شلنا imageVariant لأن الباكند مش بيستخدمه
 
       await createProduct(payload);
       toast.success("Product created successfully");
-      console.log("Product created with payload:", payload); // Debug
+      console.log("Product created with payload:", payload);
       navigate("/admin/products");
     } catch (error) {
       console.error(error);
@@ -203,7 +190,6 @@ const CreatProduct = () => {
       setUploading(false);
     }
   };
-
   return (
     <div className="max-w-4xl mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
