@@ -69,7 +69,7 @@ const Category = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
+            className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8"
           >
             {categories.map((category) => (
               <motion.div
@@ -85,7 +85,7 @@ const Category = () => {
                   navigate(`/products?categoryId=${targetId}`);
                 }}
               >
-                <div className="relative overflow-hidden rounded-full w-48 h-48 mx-auto mb-4 shadow-lg">
+                <div className="relative overflow-hidden rounded-full w-24 h-24 sm:w-36 sm:h-36 md:w-48 md:h-48 mx-auto mb-2 md:mb-4 shadow-lg">
                   <img
                     src={
                       category.image || "https://via.placeholder.com/400x500"
@@ -95,7 +95,7 @@ const Category = () => {
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300 rounded-full" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-[#cc1f69] transition-colors">
+                <h3 className="text-xs sm:text-base md:text-xl font-semibold text-gray-900 group-hover:text-[#cc1f69] transition-colors">
                   {category.name}
                 </h3>
               </motion.div>
