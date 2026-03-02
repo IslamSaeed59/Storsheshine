@@ -21,23 +21,53 @@ const ProductCard = ({ product }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState(null);
+  const [allImages, setAllImages] = useState([]);
 
   // Reset selected image when variant changes
   useEffect(() => {
-    setSelectedImage(null);
+    if (selectedVariant?.imageVariant) {
+      setSelectedImage(selectedVariant.imageVariant);
+    } else {
+      setSelectedImage(null);
+    }
   }, [selectedVariant, selectedColor]);
 
+  // useEffect(() => {
+  //   if (product) {
+  //     if (product.ProductVariants && product.ProductVariants.length > 0) {
+  //       const firstVariant = product.ProductVariants[0];
+  //       setSelectedVariant(firstVariant);
+  //       setSelectedColor(
+  //         Array.isArray(firstVariant.color)
+  //           ? firstVariant.color[0]
+  //           : firstVariant.color,
+  //       );
+  //     }
+  //   }
+  // }, [product]);
+
+  // Collect all images (main product images + variant images)
   useEffect(() => {
     if (product) {
-      if (product.ProductVariants && product.ProductVariants.length > 0) {
-        const firstVariant = product.ProductVariants[0];
-        setSelectedVariant(firstVariant);
-        setSelectedColor(
-          Array.isArray(firstVariant.color)
-            ? firstVariant.color[0]
-            : firstVariant.color,
-        );
+      const images = [];
+
+      // Add main product images
+      if (Array.isArray(product.images)) {
+        images.push(...product.images);
+      } else if (product.images) {
+        images.push(product.images);
       }
+
+      // Add variant images
+      if (product.ProductVariants && Array.isArray(product.ProductVariants)) {
+        product.ProductVariants.forEach((variant) => {
+          if (variant.imageVariant && !images.includes(variant.imageVariant)) {
+            images.push(variant.imageVariant);
+          }
+        });
+      }
+
+      setAllImages(images);
     }
   }, [product]);
 
@@ -53,7 +83,6 @@ const ProductCard = ({ product }) => {
     ProductVariants,
     isBestseller,
     isFeatured,
-    images,
   } = product;
 
   // Calculate prices based on selected variant or base price
@@ -102,7 +131,7 @@ const ProductCard = ({ product }) => {
 
   const displayImage =
     selectedImage ||
-    (Array.isArray(images) ? images[0] : images) ||
+    (Array.isArray(allImages) ? allImages[0] : allImages) ||
     "/api/placeholder/400/400";
 
   return (
@@ -152,7 +181,13 @@ const ProductCard = ({ product }) => {
             </div>
 
             {/* Main Image - Improved container */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center aspect-square overflow-hidden group cursor-pointer border border-gray-100 shadow-sm hover:shadow-xl transition-shadow duration-300">
+            <div
+              className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center aspect-square overflow-hidden group cursor-pointer border border-gray-100 shadow-sm hover:shadow-xl transition-shadow duration-300"
+              onClick={() => {
+                setModalImage(displayImage);
+                setIsImageModalOpen(true);
+              }}
+            >
               <img
                 src={displayImage}
                 alt={name}
@@ -165,26 +200,38 @@ const ProductCard = ({ product }) => {
               />
             </div>
 
-            {/* Thumbnail Gallery - Improved interaction */}
-            {Array.isArray(images) && images.length > 1 && (
-              <div className="grid grid-cols-4 gap-3 mt-4">
-                {images.map((img, idx) => (
+            {/* Thumbnail Gallery - All images including variants */}
+            {allImages.length > 1 && (
+              <div className="grid grid-cols-5 gap-2 mt-4">
+                {allImages.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(img)}
-                    className={`aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                       displayImage === img
-                        ? "border-pink-500 ring-4 ring-pink-500/20 scale-105"
+                        ? "border-pink-500 ring-2 ring-pink-500/20 scale-105"
                         : "border-transparent hover:border-gray-300 hover:scale-105"
                     }`}
                   >
                     <img
                       src={img}
                       alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-full object-contain transition-transform duration-300"
+                      className="w-full h-full object-contain bg-gray-50 transition-transform duration-300"
+                      onError={(e) => {
+                        e.target.src = "/api/placeholder/100/100";
+                        e.target.onerror = null;
+                      }}
                     />
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* Image count indicator */}
+            {allImages.length > 0 && (
+              <div className="text-sm text-gray-500 text-center mt-2">
+                {allImages.length} {allImages.length === 1 ? "image" : "images"}{" "}
+                available
               </div>
             )}
           </div>
@@ -298,21 +345,16 @@ const ProductCard = ({ product }) => {
                           }
                         }}
                         className={`
-                      w-12 h-12 rounded-full border-2 shadow-md transition-all duration-200 relative
+                      px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all duration-200
                       ${
                         isSelected
-                          ? "ring-2 ring-pink-500 ring-offset-2 border-white scale-110"
-                          : "border-gray-200 hover:border-pink-300 hover:scale-110"
+                          ? "border-pink-500 bg-pink-50 text-pink-600"
+                          : "border-gray-200 hover:border-pink-200 text-gray-700"
                       }
-                      ${isOutOfStock ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
+                      ${isOutOfStock ? "opacity-50 cursor-not-allowed line-through bg-gray-50" : "cursor-pointer"}
                     `}
-                        style={{ backgroundColor: color }}
                       >
-                        {isOutOfStock && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-full h-0.5 bg-gray-400 rotate-45 rounded-full" />
-                          </div>
-                        )}
+                        {color}
                       </button>
                     );
                   })}
@@ -382,39 +424,6 @@ const ProductCard = ({ product }) => {
                     );
                   })}
                 </div>
-
-                {/* Variant Image Preview */}
-                {selectedVariant?.imageVariant && (
-                  <div className="mt-6 pt-2">
-                    <div className="text-sm font-semibold text-gray-700 mb-3">
-                      {selectedVariant.size} Preview:
-                    </div>
-                    <div className="grid grid-cols-1 gap-3">
-                      <div
-                        className="relative group w-64 md:w-72 cursor-pointer"
-                        onClick={() => {
-                          setModalImage(selectedVariant.imageVariant);
-                          setIsImageModalOpen(true);
-                        }}
-                      >
-                        <div className="aspect-square rounded-xl border-2 border-gray-100 overflow-hidden bg-gradient-to-br from-gray-50 to-white shadow-md hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                          <img
-                            src={selectedVariant.imageVariant}
-                            alt={`${selectedVariant.size} variant`}
-                            className="w-full h-full object-contain p-1 transition-transform duration-300 group-hover:scale-110"
-                            onError={(e) => {
-                              e.target.src = "/api/placeholder/400/400";
-                              e.target.onerror = null;
-                            }}
-                          />
-                        </div>
-                        <span className="text-xs font-medium text-gray-600 mt-2 block text-center bg-gray-50 py-1 px-2 rounded-full">
-                          {selectedVariant.size} Variant Image
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -474,7 +483,7 @@ const ProductCard = ({ product }) => {
           </button>
           <img
             src={modalImage}
-            alt="Variant Preview"
+            alt="Product Preview"
             className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in duration-300"
             onClick={(e) => e.stopPropagation()}
           />

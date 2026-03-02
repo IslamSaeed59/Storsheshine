@@ -22,6 +22,9 @@ const productVariantSchema = new mongoose.Schema({
   imageVariant: {
     type: String,
   },
+  sizeShart: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("ProductVariant", productVariantSchema);

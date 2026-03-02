@@ -16,8 +16,8 @@ exports.createProduct = asyncHandler(async (req, res) => {
     stock,
     images,
     imageVariant,
+    sizeShart,
   } = req.body;
-  console.log(req.body);
   const product = await Product.create({
     name,
     description,
@@ -33,6 +33,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
     price,
     stock,
     imageVariant,
+    sizeShart,
     productId: product._id,
   });
 
