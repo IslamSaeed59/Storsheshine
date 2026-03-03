@@ -12,6 +12,7 @@ import {
   Truck,
   ShieldCheck,
   X,
+  Ruler,
 } from "lucide-react";
 
 const ProductCard = ({ product }) => {
@@ -22,6 +23,8 @@ const ProductCard = ({ product }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [allImages, setAllImages] = useState([]);
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+  const [selectedSizeChart, setSelectedSizeChart] = useState(null);
 
   // Reset selected image when variant changes
   useEffect(() => {
@@ -31,20 +34,6 @@ const ProductCard = ({ product }) => {
       setSelectedImage(null);
     }
   }, [selectedVariant, selectedColor]);
-
-  // useEffect(() => {
-  //   if (product) {
-  //     if (product.ProductVariants && product.ProductVariants.length > 0) {
-  //       const firstVariant = product.ProductVariants[0];
-  //       setSelectedVariant(firstVariant);
-  //       setSelectedColor(
-  //         Array.isArray(firstVariant.color)
-  //           ? firstVariant.color[0]
-  //           : firstVariant.color,
-  //       );
-  //     }
-  //   }
-  // }, [product]);
 
   // Collect all images (main product images + variant images)
   useEffect(() => {
@@ -70,6 +59,15 @@ const ProductCard = ({ product }) => {
       setAllImages(images);
     }
   }, [product]);
+
+  // Update selected size chart when variant changes
+  useEffect(() => {
+    if (selectedVariant?.sizeChart) {
+      setSelectedSizeChart(selectedVariant.sizeChart);
+    } else {
+      setSelectedSizeChart(null);
+    }
+  }, [selectedVariant]);
 
   if (!product) return null;
 
@@ -362,13 +360,24 @@ const ProductCard = ({ product }) => {
               </div>
             )}
 
-            {/* Memory Selection */}
+            {/* Memory Selection with Size Chart */}
             {memoryOptions.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-gray-700">
                     Select Size
                   </span>
+
+                  {/* Size Chart Button */}
+                  {selectedSizeChart && (
+                    <button
+                      onClick={() => setIsSizeChartOpen(true)}
+                      className="flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700 font-medium bg-pink-50 hover:bg-pink-100 px-4 py-2 rounded-xl transition-all duration-200 border border-pink-200"
+                    >
+                      <Ruler size={18} />
+                      Size Chart
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-3">
@@ -487,6 +496,50 @@ const ProductCard = ({ product }) => {
             className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in duration-300"
             onClick={(e) => e.stopPropagation()}
           />
+        </div>
+      )}
+
+      {/* Size Chart Modal */}
+      {isSizeChartOpen && selectedSizeChart && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300"
+          onClick={() => setIsSizeChartOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-2">
+                <Ruler size={24} className="text-pink-500" />
+                <h3 className="text-xl font-bold text-gray-900">
+                  Size Chart - {selectedVariant?.size || "Size Guide"}
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsSizeChartOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={24} className="text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-center">
+                <img
+                  src={selectedSizeChart}
+                  alt="Size Chart"
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                  onError={(e) => {
+                    e.target.src = "/api/placeholder/600/800";
+                    e.target.onerror = null;
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

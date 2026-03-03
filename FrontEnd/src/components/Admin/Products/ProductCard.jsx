@@ -101,7 +101,6 @@ const ProductCard = () => {
     try {
       setUploading(true);
       const response = await uploadVariantImage(formData);
-      console.log("✅ Upload response:", response.data); // Debug
       return response.data.imageUrl;
     } catch (error) {
       console.error("❌ Upload error:", error);
@@ -532,7 +531,7 @@ const ProductCard = () => {
                         <input
                           type="file"
                           accept="image/*"
-                          className="hidden" // ✅ Disable if no category selected
+                          className="hidden"
                           onChange={handleImageChange}
                         />
                       </label>
@@ -569,7 +568,10 @@ const ProductCard = () => {
                   {/* Size Chart Image Upload */}
                   <div className="col-span-1 sm:col-span-2 lg:col-span-2">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                      Size Chart <span className="text-gray-400 font-normal normal-case">(Optional)</span>
+                      Size Chart{" "}
+                      <span className="text-gray-400 font-normal normal-case">
+                        (Optional)
+                      </span>
                     </label>
 
                     {!sizeChartPreview ? (

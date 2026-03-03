@@ -12,6 +12,7 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       try {
         const response = await getProductById(id);
+        console.log("Product Response:", response.data);
         setProduct(response.data);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -23,7 +24,6 @@ const ProductDetails = () => {
   if (!product) {
     return <div>Product not found</div>;
   }
-
 
   return (
     <div>
