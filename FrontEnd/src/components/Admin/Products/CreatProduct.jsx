@@ -217,7 +217,7 @@ const CreatProduct = () => {
       if (sizeChartImageFile) {
         setUploading(true);
         const formData = new FormData();
-        formData.append("sizeChartImage", sizeChartImageFile);
+        formData.append("sizeChart", sizeChartImageFile);
         try {
           const res = await uploadsizeChartImage(formData);
           sizeChartUrl = res.data.imageUrl;
