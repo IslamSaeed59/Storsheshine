@@ -5,6 +5,7 @@ import {
   createVariant,
   deleteVariant,
   uploadVariantImage,
+  uploadsizeChartImage,
 } from "../../../Services/api";
 import Header from "../../../Layout/Admin/Header";
 import { toast } from "react-toastify";
@@ -35,6 +36,9 @@ const ProductCard = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [sizeChartFile, setSizeChartFile] = useState(null);
+  const [sizeChartPreview, setSizeChartPreview] = useState(null);
+  const [uploadingSizeChart, setUploadingSizeChart] = useState(false);
   const [selectedMainImage, setSelectedMainImage] = useState(null);
 
   const handleImageChange = (e) => {
@@ -61,6 +65,31 @@ const ProductCard = () => {
     setImagePreview(null);
   };
 
+  // ✅ Handle size chart selection
+  const handleSizeChartChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    setSizeChartFile(file);
+    setSizeChartPreview(URL.createObjectURL(file));
+  };
+
+  // ✅ Remove selected size chart
+  const handleRemoveSizeChart = () => {
+    setSizeChartFile(null);
+    setSizeChartPreview(null);
+  };
+
   // ✅ Upload image with category name
   const handleImageUpload = async () => {
     if (!imageFile) return null;
@@ -80,6 +109,26 @@ const ProductCard = () => {
       return null;
     } finally {
       setUploading(false);
+    }
+  };
+
+  // ✅ Upload size chart image
+  const handleSizeChartUpload = async () => {
+    if (!sizeChartFile) return null;
+
+    const formData = new FormData();
+    formData.append("sizeChart", sizeChartFile);
+
+    try {
+      setUploadingSizeChart(true);
+      const response = await uploadsizeChartImage(formData);
+      return response.data.imageUrl;
+    } catch (error) {
+      console.error("❌ Size chart upload error:", error);
+      toast.error("Size chart upload failed");
+      return null;
+    } finally {
+      setUploadingSizeChart(false);
     }
   };
 
@@ -135,8 +184,16 @@ const ProductCard = () => {
     setSubmitting(true);
     try {
       const imageUrl = await handleImageUpload();
+      if (!imageUrl) {
+        setSubmitting(false);
+        return;
+      }
 
-      if (!imageUrl) return;
+      let sizeChartUrl = "";
+      if (sizeChartFile) {
+        sizeChartUrl = await handleSizeChartUpload();
+      }
+
       const payload = {
         ...newVariant,
         productId: id,
@@ -144,6 +201,7 @@ const ProductCard = () => {
         price: parseFloat(newVariant.price),
         stock: parseInt(newVariant.stock),
         imageVariant: imageUrl,
+        sizeChart: sizeChartUrl,
       };
 
       await createVariant(payload);
@@ -152,6 +210,8 @@ const ProductCard = () => {
       setNewVariant({ size: "", color: "", price: "", stock: "" });
       setImageFile(null);
       setImagePreview(null);
+      setSizeChartFile(null);
+      setSizeChartPreview(null);
       fetchProduct();
     } catch (error) {
       console.error("Error creating variant:", error);
@@ -451,7 +511,7 @@ const ProductCard = () => {
                       placeholder="0"
                     />
                   </div>
-                  <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+                  <div className="col-span-1 sm:col-span-2 lg:col-span-2">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                       Variant Image <span className="text-red-500">*</span>
                     </label>
@@ -493,6 +553,62 @@ const ProductCard = () => {
                           </button>
                         </div>
                         {uploading && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <p className="text-white text-xs font-medium">
+                                Uploading...
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Size Chart Image Upload */}
+                  <div className="col-span-1 sm:col-span-2 lg:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      Size Chart <span className="text-gray-400 font-normal normal-case">(Optional)</span>
+                    </label>
+
+                    {!sizeChartPreview ? (
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 hover:border-[#cc1f69]/50 transition-all group">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <div className="p-2 bg-gray-100 rounded-full mb-2 group-hover:bg-[#cc1f69]/10 transition-colors">
+                            <FiUpload className="w-5 h-5 text-gray-400 group-hover:text-[#cc1f69]" />
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            <span className="font-semibold text-[#cc1f69]">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleSizeChartChange}
+                        />
+                      </label>
+                    ) : (
+                      <div className="relative w-full sm:w-48 h-48 rounded-xl overflow-hidden border border-gray-200 shadow-sm group">
+                        <img
+                          src={sizeChartPreview}
+                          alt="Size Chart Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={handleRemoveSizeChart}
+                            className="bg-white/90 text-red-500 p-2 rounded-full hover:bg-white hover:scale-110 transition-all shadow-lg"
+                          >
+                            <FiX className="w-5 h-5" />
+                          </button>
+                        </div>
+                        {uploadingSizeChart && (
                           <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
                             <div className="flex flex-col items-center gap-2">
                               <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
