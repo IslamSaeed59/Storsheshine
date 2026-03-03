@@ -47,8 +47,8 @@ export const uploadVariantImage = (imageData) =>
     },
   });
 
-export const uploadsizeShartImage = (imageData) =>
-  apiClient.post("/upload/sizeShart", imageData, {
+export const uploadsizeChartImage = (imageData) =>
+  apiClient.post("/upload/sizeChart", imageData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

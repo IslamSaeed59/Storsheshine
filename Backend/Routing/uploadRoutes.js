@@ -96,23 +96,23 @@ router.post(
    📂 Upload sizeShart image
 ============================== */
 
-router.post("/sizeShart", parser.single("sizeShart"), async (req, res) => {
+router.post("/sizeChart", parser.single("sizeChart"), async (req, res) => {
   try {
     if (!req.file)
       return res.status(400).json({ message: "Please upload a file." });
 
-    const folder = `ecommerce/sizeSharts`;
-    const publicId = `sizeShart-${Date.now()}`;
+    const folder = `ecommerce/sizeCharts`;
+    const publicId = `sizeChart-${Date.now()}`;
 
     const result = await uploadToCloudinary(req.file.buffer, folder, publicId);
 
     res.status(200).json({
-      message: "SizeShart image uploaded successfully",
+      message: "SizeChart image uploaded successfully",
       imageUrl: result.secure_url,
       public_id: result.public_id,
     });
   } catch (error) {
-    console.error("❌ SizeShart Upload error:", error);
+    console.error("❌ SizeChart Upload error:", error);
     res.status(500).json({ message: error.message });
   }
 });

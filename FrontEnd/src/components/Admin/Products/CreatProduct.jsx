@@ -7,7 +7,7 @@ import {
   getCategories,
   uploadImage,
   uploadVariantImage,
-  uploadsizeShartImage,
+  uploadsizeChartImage,
 } from "../../../Services/api";
 import { FiUpload, FiX } from "react-icons/fi";
 
@@ -219,7 +219,7 @@ const CreatProduct = () => {
         const formData = new FormData();
         formData.append("sizeChartImage", sizeChartImageFile);
         try {
-          const res = await uploadsizeShartImage(formData);
+          const res = await uploadsizeChartImage(formData);
           sizeChartUrl = res.data.imageUrl;
         } catch (error) {
           console.error("Size chart upload failed", error);
