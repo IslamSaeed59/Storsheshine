@@ -16,6 +16,7 @@ const CreatProduct = () => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm();
   const navigate = useNavigate();
@@ -29,8 +30,20 @@ const CreatProduct = () => {
   const [sizeChartImageFile, setSizeChartImageFile] = useState(null);
   const [sizeChartImagePreview, setSizeChartImagePreview] = useState(null);
 
+  const [isVariantPriceEdited, setIsVariantPriceEdited] = useState(false);
+
+  const size = ["Xs", "S", "M", "L", "XL", "XXL", "NoSize"];
+
   // ✅ Watch categoryId to get category name
   const selectedCategoryId = watch("categoryId");
+  const basePrice = watch("basePrice");
+
+  useEffect(() => {
+    // Only update if the variant price hasn't been manually edited
+    if (!isVariantPriceEdited) {
+      setValue("price", basePrice, { shouldValidate: true });
+    }
+  }, [basePrice, isVariantPriceEdited, setValue]);
 
   // ✅ Get selected category name
   const getSelectedCategoryName = () => {
@@ -459,14 +472,19 @@ const CreatProduct = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Size
               </label>
-              <input
-                type="text"
+              <select
                 {...register("size", { required: "Size is required" })}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
                   errors.size ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="e.g. M, L, 42"
-              />
+              >
+                <option value="">Select Size</option>
+                {size.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
               {errors.size && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.size.message}
@@ -506,6 +524,7 @@ const CreatProduct = () => {
                   required: "Price is required",
                   min: 0,
                 })}
+                onInput={() => setIsVariantPriceEdited(true)}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
                   errors.price ? "border-red-500" : "border-gray-300"
                 }`}

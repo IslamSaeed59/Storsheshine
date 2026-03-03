@@ -41,6 +41,8 @@ const ProductCard = () => {
   const [uploadingSizeChart, setUploadingSizeChart] = useState(false);
   const [selectedMainImage, setSelectedMainImage] = useState(null);
 
+  const size = ["Xs", "S", "M", "L", "XL", "XXL", "NoSize"];
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -148,6 +150,10 @@ const ProductCard = () => {
       const response = await getProductById(id);
       console.log("Product Response:", response.data);
       setProduct(response.data);
+      setNewVariant((prev) => ({
+        ...prev,
+        price: prev.price !== "" ? prev.price : (response.data.basePrice || ""),
+      }));
       // Set initial main image
       if (response.data.images) {
         setSelectedMainImage(
@@ -446,15 +452,20 @@ const ProductCard = () => {
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Size <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="size"
                       value={newVariant.size}
                       onChange={handleVariantChange}
                       required
                       className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
-                      placeholder="e.g., M, XL, 42"
-                    />
+                    >
+                      <option value="">Select Size</option>
+                      {size.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">

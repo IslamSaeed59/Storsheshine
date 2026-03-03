@@ -60,11 +60,12 @@ exports.getProducts = asyncHandler(async (req, res) => {
 
     products = await Product.find({})
       .populate("categoryId")
+      .sort({ name: 1 }) // Sort A to Z (ascending)
       .skip(skip)
       .limit(limitNum);
   } else {
-    // No pagination → return ALL products
-    products = await Product.find({}).populate("categoryId");
+    // No pagination → return ALL products sorted A to Z
+    products = await Product.find({}).populate("categoryId").sort({ name: 1 }); // Sort A to Z (ascending)
     totalProducts = products.length;
     totalPages = 1;
     currentPage = 1;
@@ -196,7 +197,6 @@ exports.deleteCategory = asyncHandler(async (req, res) => {
 exports.createProductVariant = asyncHandler(async (req, res) => {
   const { productId, size, color, price, stock, imageVariant, sizeChart } =
     req.body;
-  console.log("🔥 Request Body:", req.body);
   const variant = await ProductVariant.create({
     productId,
     size,
@@ -206,7 +206,6 @@ exports.createProductVariant = asyncHandler(async (req, res) => {
     imageVariant,
     sizeChart,
   });
-  console.log(" Created Variant:", variant);
   res.status(201).json(variant);
 });
 

@@ -7,6 +7,7 @@ import {
   updateProduct,
   getCategories,
   updateVariant,
+  uploadsizeChartImage,
 } from "../../../Services/api";
 import Header from "../../../Layout/Admin/Header";
 import { Save, X, Package, DollarSign, Layers, Edit3 } from "lucide-react";
@@ -24,6 +25,10 @@ const UpdateProduct = () => {
   const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingVariant, setSavingVariant] = useState(null);
+  const [editedVariantIndices, setEditedVariantIndices] = useState({});
+  const [sizeChartFiles, setSizeChartFiles] = useState({});
+
+  const size = ["Xs", "S", "M", "L", "XL", "XXL", "NoSize"];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,18 +92,45 @@ const UpdateProduct = () => {
     const newVariants = [...variants];
     newVariants[index][field] = value;
     setVariants(newVariants);
+
+    if (field === "price") {
+      setEditedVariantIndices((prev) => ({ ...prev, [index]: true }));
+    }
+  };
+
+  const handleSizeChartFileChange = (index, file) => {
+    if (file) {
+      setSizeChartFiles((prev) => ({ ...prev, [index]: file }));
+    }
   };
 
   const onUpdateVariant = async (index) => {
     const variant = variants[index];
     setSavingVariant(variant._id);
     try {
+      let sizeChartUrl = variant.sizeChart;
+
+      if (sizeChartFiles[index]) {
+        const formData = new FormData();
+        formData.append("sizeChart", sizeChartFiles[index]);
+        const uploadRes = await uploadsizeChartImage(formData);
+        sizeChartUrl = uploadRes.data.imageUrl;
+      }
+
       await updateVariant(variant._id, {
         size: variant.size,
         color: variant.color.split(",").map((c) => c.trim()),
         price: parseFloat(variant.price),
         stock: parseInt(variant.stock),
+        sizeChart: sizeChartUrl,
       });
+
+      // Update local state with new URL and clear file
+      const newVariants = [...variants];
+      newVariants[index].sizeChart = sizeChartUrl;
+      setVariants(newVariants);
+      setSizeChartFiles((prev) => ({ ...prev, [index]: null }));
+
       toast.success("Variant updated successfully");
     } catch (error) {
       console.error(error);
@@ -171,9 +203,6 @@ const UpdateProduct = () => {
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  {...register("description", {
-                    required: "Description is required",
-                  })}
                   rows="4"
                   className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all resize-none ${
                     errors.description
@@ -242,6 +271,16 @@ const UpdateProduct = () => {
                     {...register("basePrice", {
                       required: "Base Price is required",
                       min: { value: 0, message: "Price must be positive" },
+                      onChange: (e) => {
+                        const newPrice = e.target.value;
+                        setVariants((prev) =>
+                          prev.map((v, idx) =>
+                            !editedVariantIndices[idx]
+                              ? { ...v, price: newPrice }
+                              : v,
+                          ),
+                        );
+                      },
                     })}
                     className={`w-full pl-8 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all ${
                       errors.basePrice
@@ -266,9 +305,6 @@ const UpdateProduct = () => {
                 </label>
                 <input
                   type="text"
-                  {...register("brand", {
-                    required: "Brand is required",
-                  })}
                   className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all ${
                     errors.brand
                       ? "border-red-300 bg-red-50"
@@ -405,15 +441,20 @@ const UpdateProduct = () => {
                           <label className="text-xs text-gray-500 font-medium">
                             Size
                           </label>
-                          <input
-                            type="text"
+                          <select
                             value={variant.size}
                             onChange={(e) =>
                               handleVariantChange(index, "size", e.target.value)
                             }
                             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
-                            placeholder="Size"
-                          />
+                          >
+                            <option value="">Select Size</option>
+                            {size.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div className="space-y-1">
                           <label className="text-xs text-gray-500 font-medium">
@@ -471,6 +512,34 @@ const UpdateProduct = () => {
                             }
                             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
                             placeholder="Stock"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Size Chart Upload */}
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-500 font-medium">
+                          Size Chart
+                        </label>
+                        <div className="flex items-center gap-3">
+                          {(sizeChartFiles[index] || variant.sizeChart) && (
+                            <div className="w-10 h-10 rounded border border-gray-200 overflow-hidden flex-shrink-0 bg-gray-50">
+                              <img
+                                src={
+                                  sizeChartFiles[index]
+                                    ? URL.createObjectURL(sizeChartFiles[index])
+                                    : variant.sizeChart
+                                }
+                                alt="Size Chart"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleSizeChartFileChange(index, e.target.files[0])}
+                            className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#cc1f69]/10 file:text-[#cc1f69] hover:file:bg-[#cc1f69]/20"
                           />
                         </div>
                       </div>

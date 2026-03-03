@@ -100,7 +100,7 @@ const ProductCard = ({ product }) => {
     ? [
         ...new Set(
           ProductVariants.map((v) => v.size).filter(
-            (s) => s != null && s !== "",
+            (s) => s != null && s !== "" && s !== "NoSize",
           ),
         ),
       ]
