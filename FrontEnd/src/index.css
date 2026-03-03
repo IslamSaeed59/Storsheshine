@@ -3,14 +3,3 @@
 @import url("https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap");
 @import "tailwindcss";
 
-.Playwrite {
-  font-family: "Playwrite DE SAS", sans-serif;
-}
-
-.PlaywriteUSModern {
-  font-family: "Playwrite US Modern", cursive;
-}
-
-table {
-  font-family: "Arimo", sans-serif;
-}

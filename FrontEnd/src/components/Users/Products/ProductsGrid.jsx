@@ -159,7 +159,7 @@ const ProductsGrid = ({ products }) => {
               {product.name}
             </h3>
 
-            {/* Rating with hearts instead of stars */}
+            {/* Rating with hearts instead of stars
             <div className="flex items-center gap-2 mb-3">
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((heart) => (
@@ -180,7 +180,7 @@ const ProductsGrid = ({ products }) => {
                 ))}
               </div>
               <span className="text-xs text-gray-400">(24 reviews)</span>
-            </div>
+            </div> */}
 
             {/* Price with elegant styling */}
             <div className="flex items-center justify-between">
@@ -188,19 +188,19 @@ const ProductsGrid = ({ products }) => {
                 {product.discount > 0 ? (
                   <>
                     <span className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                      $
+                      EGP
                       {calculateDiscountedPrice(
                         product.basePrice,
                         product.discount,
                       )}
                     </span>
                     <span className="text-xs text-gray-400 line-through">
-                      ${parseFloat(product.basePrice).toFixed(2)}
+                      EGP{parseFloat(product.basePrice).toFixed(2)}
                     </span>
                   </>
                 ) : (
                   <span className="text-lg font-bold text-gray-800">
-                    ${parseFloat(product.basePrice).toFixed(2)}
+                    EGP{parseFloat(product.basePrice).toFixed(2)}
                   </span>
                 )}
               </div>
@@ -216,9 +216,9 @@ const ProductsGrid = ({ products }) => {
             </div>
 
             {/* Free shipping badge for cosmetics */}
-            <div className="mt-2 flex items-center gap-1">
+            {/* <div className="mt-2 flex items-center gap-1">
               <span className="text-[10px] text-gray-400">Free shipping</span>
-            </div>
+            </div> */}
           </div>
         </div>
       ))}

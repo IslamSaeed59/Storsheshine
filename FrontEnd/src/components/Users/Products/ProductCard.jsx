@@ -244,7 +244,7 @@ const ProductCard = ({ product }) => {
                 {name}
               </h1>
 
-              <div className="flex items-center gap-4">
+              {/* <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-full">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
@@ -261,7 +261,7 @@ const ProductCard = ({ product }) => {
                 <span className="text-sm text-gray-500 font-medium hover:text-pink-600 transition-colors cursor-pointer underline-offset-2 hover:underline">
                   135 reviews
                 </span>
-              </div>
+              </div> */}
             </div>
 
             {/* Description */}
@@ -289,15 +289,15 @@ const ProductCard = ({ product }) => {
             <div className="py-3">
               <div className="flex items-baseline gap-4">
                 <span className="text-5xl font-bold text-gray-900 tracking-tight">
-                  ${discountedPrice}
+                  EGP{discountedPrice}
                 </span>
                 {discountValue > 0 && (
                   <div className="flex items-center gap-3">
                     <span className="text-2xl text-gray-400 line-through">
-                      ${originalPrice}
+                      EGP{originalPrice}
                     </span>
                     <span className="text-sm bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-semibold">
-                      Save ${(priceValue - discountedPrice).toFixed(2)}
+                      Save EGP${(priceValue - discountedPrice).toFixed(2)}
                     </span>
                   </div>
                 )}

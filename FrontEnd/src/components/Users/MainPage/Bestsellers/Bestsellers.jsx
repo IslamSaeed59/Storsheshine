@@ -78,7 +78,11 @@ const Bestsellers = () => {
               >
                 <div className="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 bg-gray-200 rounded-lg overflow-hidden">
                   <img
-                    src={product.image}
+                    src={
+                      product.images && product.images.length > 0
+                        ? product.images[0]
+                        : "/placeholder.png"
+                    }
                     alt={product.name}
                     className="w-full h-full object-center object-cover transition-all duration-300 group-hover:scale-105"
                   />

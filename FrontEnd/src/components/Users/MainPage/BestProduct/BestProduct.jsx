@@ -82,9 +82,13 @@ const BestProduct = () => {
         >
           <div className="relative h-80 md:h-full">
             <img
-              src={product.image}
+              src={
+                product.images && product.images.length > 0
+                  ? product.images[0]
+                  : "/placeholder.png"
+              }
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-center  object-contain transition-transform duration-300 hover:scale-105"
             />
           </div>
 
