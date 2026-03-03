@@ -12,7 +12,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 
-const PRODUCTS_PER_PAGE =50 ;
+const PRODUCTS_PER_PAGE = 50;
 
 const UserProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams(); // ← ADD THIS
@@ -348,9 +348,36 @@ const UserProducts = () => {
           </div>
 
           {loading && (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#cc1f69]"></div>
-              <p className="mt-4 text-gray-500">Loading products...</p>
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center min-h-screen w-full bg-gradient-to-br from-white to-gray-50">
+              {/* الشعار - تأثير واحد فقط */}
+              <div className="relative mb-8">
+                {/* دائرة خلفية واحدة وناعمة */}
+                <div className="absolute inset-0 rounded-full bg-blue-100 animate-pulse opacity-30 blur-sm"></div>
+
+                <img
+                  src="/Logo1.png"
+                  alt="جاري التحميل"
+                  className="relative w-36 h-auto animate-soft-bounce"
+                />
+              </div>
+              {/* نص التحميل */}
+              <div className="text-center">
+                {/* نقاط متحركة - تصميم أنظف */}
+                <div className="flex justify-center space-x-2 rtl:space-x-reverse">
+                  <div
+                    className="w-3 h-3 bg-blue-500 rounded-full animate-fade"
+                    style={{ animationDelay: "0s" }}
+                  ></div>
+                  <div
+                    className="w-3 h-3 bg-blue-500 rounded-full animate-fade"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
+                  <div
+                    className="w-3 h-3 bg-blue-500 rounded-full animate-fade"
+                    style={{ animationDelay: "0.4s" }}
+                  ></div>
+                </div>
+              </div>
             </div>
           )}
 

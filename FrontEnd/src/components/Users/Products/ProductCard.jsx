@@ -1,19 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Star,
-  Info,
-  Package,
-  Layers,
-  Minus,
-  Plus,
-  ShoppingCart,
-  Heart,
-  Share2,
-  Truck,
-  ShieldCheck,
-  X,
-  Ruler,
-} from "lucide-react";
+import { Info, Layers, Minus, Plus, X, Ruler } from "lucide-react";
 
 const ProductCard = ({ product }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
