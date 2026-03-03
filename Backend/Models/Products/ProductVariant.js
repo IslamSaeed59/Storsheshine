@@ -22,7 +22,7 @@ const productVariantSchema = new mongoose.Schema({
   imageVariant: {
     type: String,
   },
-  sizeShart: {
+  sizeChart: {
     type: String,
   },
 });
