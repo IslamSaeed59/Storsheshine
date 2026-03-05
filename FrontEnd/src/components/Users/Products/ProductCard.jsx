@@ -55,6 +55,37 @@ const ProductCard = ({ product }) => {
     }
   }, [selectedVariant]);
 
+  // Auto-select first color and variant
+  useEffect(() => {
+    if (product?.ProductVariants) {
+      const uniqueColors = [
+        ...new Set(
+          product.ProductVariants.flatMap((v) =>
+            Array.isArray(v.color) ? v.color : [v.color]
+          )
+        ),
+      ];
+
+      if (uniqueColors.length > 0) {
+        const firstColor = uniqueColors[0];
+        setSelectedColor(firstColor);
+
+        const variantsWithColor = product.ProductVariants.filter((v) =>
+          Array.isArray(v.color)
+            ? v.color.includes(firstColor)
+            : v.color === firstColor
+        );
+
+        const defaultVariant =
+          variantsWithColor.find((v) => v.stock > 0) || variantsWithColor[0];
+
+        if (defaultVariant) {
+          setSelectedVariant(defaultVariant);
+        }
+      }
+    }
+  }, [product]);
+
   if (!product) return null;
 
   const {
@@ -227,25 +258,6 @@ const ProductCard = ({ product }) => {
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
                 {name}
               </h1>
-
-              {/* <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-full">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      size={18}
-                      className={`${
-                        star <= 4
-                          ? "fill-amber-400 text-amber-400"
-                          : "fill-gray-200 text-gray-200"
-                      } transition-transform hover:scale-110`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-500 font-medium hover:text-pink-600 transition-colors cursor-pointer underline-offset-2 hover:underline">
-                  135 reviews
-                </span>
-              </div> */}
             </div>
 
             {/* Description */}
@@ -271,17 +283,17 @@ const ProductCard = ({ product }) => {
 
             {/* Price Section */}
             <div className="py-3">
-              <div className="flex items-baseline gap-4">
-                <span className="text-5xl font-bold text-gray-900 tracking-tight">
-                  EGP{discountedPrice}
+              <div className="flex flex-col xs:flex-row xs:items-baseline gap-2 xs:gap-4">
+                <span className="text-3xl xs:text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
+                  EGP {discountedPrice}
                 </span>
                 {discountValue > 0 && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl text-gray-400 line-through">
-                      EGP{originalPrice}
+                  <div className="flex flex-wrap items-center gap-2 xs:gap-3">
+                    <span className="text-base xs:text-lg sm:text-2xl text-gray-400 line-through">
+                      EGP {originalPrice}
                     </span>
-                    <span className="text-sm bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-semibold">
-                      Save EGP${(priceValue - discountedPrice).toFixed(2)}
+                    <span className="text-xs xs:text-sm bg-green-100 text-green-700 px-2 xs:px-3 py-1 xs:py-1.5 rounded-full font-semibold whitespace-nowrap">
+                      Save EGP {priceValue - discountedPrice}
                     </span>
                   </div>
                 )}
@@ -421,18 +433,6 @@ const ProductCard = ({ product }) => {
                 </div>
               </div>
             )}
-
-            {/* Stock Status */}
-            {selectedVariant &&
-              selectedVariant.stock <= 2 &&
-              selectedVariant.stock > 0 && (
-                <div className="bg-amber-50 text-amber-700 text-sm font-medium px-4 py-3 rounded-xl flex items-center gap-2 border border-amber-200">
-                  <Info size={18} className="text-amber-500" />
-                  Only {selectedVariant.stock}{" "}
-                  {selectedVariant.stock === 1 ? "item" : "items"} left in
-                  stock!
-                </div>
-              )}
 
             {/* Quantity */}
             <div className="pt-4 border-t border-gray-100">

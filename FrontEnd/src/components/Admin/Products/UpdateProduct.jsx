@@ -155,34 +155,34 @@ const UpdateProduct = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
       <Header
         title="Update Product"
         buttonText="Back to Products"
         navigation="/admin/products"
       />
 
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Product Details Form */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <Package size={20} className="text-[#cc1f69]" />
+          <div className="border-b border-gray-100 bg-gray-50/50 px-4 sm:px-6 py-3 sm:py-4">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Package size={18} className="text-[#cc1f69]" />
               Product Information
             </h2>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
               {/* Name - Full Width */}
-              <div className="col-span-2">
+              <div className="col-span-1">
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">
                   Product Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   {...register("name", { required: "Name is required" })}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all ${
+                  className={`w-full px-3 sm:px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm ${
                     errors.name
                       ? "border-red-300 bg-red-50"
                       : "border-gray-200 hover:border-gray-300"
@@ -198,13 +198,16 @@ const UpdateProduct = () => {
               </div>
 
               {/* Description - Full Width */}
-              <div className="col-span-2">
+              <div className="col-span-1">
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   rows="4"
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all resize-none ${
+                  {...register("description", {
+                    required: "Description is required",
+                  })}
+                  className={`w-full px-3 sm:px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all resize-none text-sm ${
                     errors.description
                       ? "border-red-300 bg-red-50"
                       : "border-gray-200 hover:border-gray-300"
@@ -228,7 +231,7 @@ const UpdateProduct = () => {
                   {...register("categoryId", {
                     required: "Category is required",
                   })}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all appearance-none bg-white ${
+                  className={`w-full px-3 sm:px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all appearance-none bg-white text-sm ${
                     errors.categoryId
                       ? "border-red-300 bg-red-50"
                       : "border-gray-200 hover:border-gray-300"
@@ -282,7 +285,7 @@ const UpdateProduct = () => {
                         );
                       },
                     })}
-                    className={`w-full pl-8 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all ${
+                    className={`w-full pl-8 pr-3 sm:pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm ${
                       errors.basePrice
                         ? "border-red-300 bg-red-50"
                         : "border-gray-200 hover:border-gray-300"
@@ -305,7 +308,8 @@ const UpdateProduct = () => {
                 </label>
                 <input
                   type="text"
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all ${
+                  {...register("brand", { required: "Brand is required" })}
+                  className={`w-full px-3 sm:px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm ${
                     errors.brand
                       ? "border-red-300 bg-red-50"
                       : "border-gray-200 hover:border-gray-300"
@@ -320,15 +324,15 @@ const UpdateProduct = () => {
                 )}
               </div>
 
-              {/* Status Flags */}
-              <div className="flex items-center gap-6 pt-7">
+              {/* Status Flags - Stack on mobile */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input
                     type="checkbox"
                     {...register("isBestseller")}
-                    className="w-5 h-5 text-[#cc1f69] border-gray-300 rounded 
-                 focus:ring-2 focus:ring-[#cc1f69] focus:ring-offset-0
-                 transition-colors duration-200"
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-[#cc1f69] border-gray-300 rounded 
+               focus:ring-2 focus:ring-[#cc1f69] focus:ring-offset-0
+               transition-colors duration-200"
                   />
                   <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors duration-200">
                     Is Bestseller
@@ -339,15 +343,16 @@ const UpdateProduct = () => {
                   <input
                     type="checkbox"
                     {...register("isFeatured")}
-                    className="w-5 h-5 text-[#cc1f69] border-gray-300 rounded 
-                 focus:ring-2 focus:ring-[#cc1f69] focus:ring-offset-0
-                 transition-colors duration-200"
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-[#cc1f69] border-gray-300 rounded 
+               focus:ring-2 focus:ring-[#cc1f69] focus:ring-offset-0
+               transition-colors duration-200"
                   />
                   <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors duration-200">
                     Is Featured
                   </span>
                 </label>
               </div>
+
               {/* Discount */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-gray-600">
@@ -360,7 +365,7 @@ const UpdateProduct = () => {
                     min="0"
                     max="100"
                     {...register("discount")}
-                    className={`w-full pl-8 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all ${
+                    className={`w-full px-3 sm:px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm ${
                       errors.discount
                         ? "border-red-300 bg-red-50"
                         : "border-gray-200 hover:border-gray-300"
@@ -377,19 +382,19 @@ const UpdateProduct = () => {
               </div>
             </div>
 
-            {/* Form Actions */}
-            <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-gray-100">
+            {/* Form Actions - Stack on mobile */}
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 mt-4 border-t border-gray-100">
               <button
                 type="button"
                 onClick={() => navigate("/admin/products")}
-                className="px-6 py-2.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 text-sm font-medium"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 text-sm font-medium"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-[#cc1f69] hover:bg-[#a91853] text-white px-6 py-2.5 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
+                className="w-full sm:w-auto bg-[#cc1f69] hover:bg-[#a91853] text-white px-4 sm:px-6 py-2.5 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
               >
                 <Save size={18} />
                 {isSubmitting ? "Updating..." : "Update Product"}
@@ -398,18 +403,18 @@ const UpdateProduct = () => {
           </form>
         </div>
 
-        {/* Variants Update Section - Horizontal Cards */}
+        {/* Variants Update Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <Layers size={20} className="text-[#cc1f69]" />
+          <div className="border-b border-gray-100 bg-gray-50/50 px-4 sm:px-6 py-3 sm:py-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Layers size={18} className="text-[#cc1f69]" />
               Product Variants
             </h3>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {variants.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {variants.map((variant, index) => (
                   <div
                     key={variant._id}
@@ -446,7 +451,7 @@ const UpdateProduct = () => {
                             onChange={(e) =>
                               handleVariantChange(index, "size", e.target.value)
                             }
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
+                            className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
                           >
                             <option value="">Select Size</option>
                             {size.map((s) => (
@@ -470,7 +475,7 @@ const UpdateProduct = () => {
                                 e.target.value,
                               )
                             }
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
+                            className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
                             placeholder="Color"
                           />
                         </div>
@@ -492,7 +497,7 @@ const UpdateProduct = () => {
                                 e.target.value,
                               )
                             }
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
+                            className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
                             placeholder="Price"
                           />
                         </div>
@@ -510,7 +515,7 @@ const UpdateProduct = () => {
                                 e.target.value,
                               )
                             }
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
+                            className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all bg-gray-50 hover:bg-white"
                             placeholder="Stock"
                           />
                         </div>
@@ -521,9 +526,9 @@ const UpdateProduct = () => {
                         <label className="text-xs text-gray-500 font-medium">
                           Size Chart
                         </label>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                           {(sizeChartFiles[index] || variant.sizeChart) && (
-                            <div className="w-10 h-10 rounded border border-gray-200 overflow-hidden flex-shrink-0 bg-gray-50">
+                            <div className="w-16 h-16 sm:w-10 sm:h-10 rounded border border-gray-200 overflow-hidden flex-shrink-0 bg-gray-50">
                               <img
                                 src={
                                   sizeChartFiles[index]
@@ -538,7 +543,12 @@ const UpdateProduct = () => {
                           <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => handleSizeChartFileChange(index, e.target.files[0])}
+                            onChange={(e) =>
+                              handleSizeChartFileChange(
+                                index,
+                                e.target.files[0],
+                              )
+                            }
                             className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#cc1f69]/10 file:text-[#cc1f69] hover:file:bg-[#cc1f69]/20"
                           />
                         </div>
@@ -570,14 +580,14 @@ const UpdateProduct = () => {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="bg-gray-50 rounded-full p-4 mb-4">
-                  <Layers size={32} className="text-gray-400" />
+              <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <div className="bg-gray-50 rounded-full p-3 sm:p-4 mb-3 sm:mb-4">
+                  <Layers size={24} className="text-gray-400" />
                 </div>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 text-sm text-center px-4">
                   No variants found for this product
                 </p>
-                <p className="text-gray-400 text-xs mt-1">
+                <p className="text-gray-400 text-xs mt-1 text-center px-4">
                   Variants can be added from the product details page
                 </p>
               </div>

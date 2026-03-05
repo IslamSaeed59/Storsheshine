@@ -246,6 +246,7 @@ const CreatProduct = () => {
         basePrice: parseFloat(data.basePrice),
         price: parseFloat(data.price),
         stock: parseInt(data.stock),
+        discount: parseFloat(data.discount || 0),
         categoryId: data.categoryId,
         color: data.color.split(",").map((c) => c.trim()),
         images: imageUrls,
@@ -377,6 +378,32 @@ const CreatProduct = () => {
             {errors.brand && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.brand.message}
+              </p>
+            )}
+          </div>
+
+          {/* Discount */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Discount (%)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              {...register("discount", {
+                min: { value: 0, message: "Discount must be positive" },
+                max: { value: 100, message: "Discount cannot exceed 100%" },
+              })}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
+                errors.discount ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="0.00"
+            />
+            {errors.discount && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.discount.message}
               </p>
             )}
           </div>
