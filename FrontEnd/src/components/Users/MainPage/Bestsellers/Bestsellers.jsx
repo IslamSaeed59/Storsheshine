@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { ArrowLeft, ArrowRight, ShoppingBag } from "lucide-react";
 import { getBestsellerProducts } from "../../../../Services/api";
 import { useNavigate } from "react-router-dom";
+import { optimizeCloudinaryUrl } from "../../../../utils/cloudinaryParams";
 
 const Bestsellers = ({ offerData }) => {
   const [bestsellers, setBestsellers] = useState([]);
@@ -101,7 +102,10 @@ const Bestsellers = ({ offerData }) => {
                   onClick={() => navigate(`/Product/${product._id || product.id}`)}
                 >
                   <img
-                    src={product.images && product.images.length > 0 ? product.images[0] : "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop"}
+                    src={optimizeCloudinaryUrl(
+                      product.images && product.images.length > 0 ? product.images[0] : "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop",
+                      { width: 400, quality: "auto" }
+                    )}
                     alt={product.name}
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                   />

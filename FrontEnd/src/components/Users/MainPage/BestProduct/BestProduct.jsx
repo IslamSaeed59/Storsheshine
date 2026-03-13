@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Plus, Minus, ArrowRight } from "lucide-react";
 import { getFeaturedProducts } from "../../../../Services/api";
 import { useNavigate } from "react-router-dom";
+import { optimizeCloudinaryUrl } from "../../../../utils/cloudinaryParams";
 
 const BestProduct = () => {
   const [quantity, setQuantity] = useState(1);
@@ -44,7 +45,10 @@ const BestProduct = () => {
               </span>
             </div>
             <img
-              src={product.images && product.images.length > 0 ? product.images[0] : "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=2000&auto=format&fit=crop"}
+              src={optimizeCloudinaryUrl(
+                product.images && product.images.length > 0 ? product.images[0] : "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=2000&auto=format&fit=crop",
+                { width: 800, quality: "auto" }
+              )}
               alt={product.name}
               className="w-full h-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-700"
             />

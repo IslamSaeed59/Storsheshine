@@ -27,6 +27,7 @@ const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
     const fetchCategories = async () => {
       try {
         const response = await getCategories();
+        console.log("response", response.data);
         const allCategories = response.data || [];
 
         const mainCategories = allCategories.filter((cat) => !cat.parentId);
