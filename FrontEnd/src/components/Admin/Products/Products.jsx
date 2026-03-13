@@ -4,8 +4,6 @@ import { toast } from "react-toastify";
 import {
   getProducts,
   deleteProduct,
-  searchProducts,
-  searchProductsByCategory,
   getCategories,
 } from "../../../Services/api";
 import Header from "../../../Layout/Admin/Header";
@@ -26,18 +24,36 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
   const itemsPerPage = 20;
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(1, "", "");
     fetchCategories();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (
+    page = currentPage,
+    search = searchTerm,
+    category = selectedCategory,
+  ) => {
+    setLoading(true);
     try {
-      const response = await getProducts();
+      const response = await getProducts({
+        page,
+        limit: itemsPerPage,
+        search,
+        category,
+      });
       setProducts(response.data.products || []);
+      console.log(response.data.products);
+      if (response.data.pagination) {
+        setTotalPages(response.data.pagination.totalPages || 1);
+        setTotalProducts(response.data.pagination.totalProducts || 0);
+        setCurrentPage(response.data.pagination.currentPage || 1);
+      }
     } catch (error) {
       console.error("Error fetching products:", error);
       toast.error("Failed to fetch products");
@@ -68,47 +84,22 @@ const Products = () => {
     }
   };
 
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     const query = e.target.value;
     setSearchTerm(query);
     setCurrentPage(1); // Reset to first page on search
-    if (selectedCategory) {
-      setSelectedCategory("");
-    }
+    setSelectedCategory(""); // Reset category when searching
 
-    if (query.trim() === "") {
-      fetchProducts();
-      return;
-    }
-
-    try {
-      const response = await searchProducts(query);
-      setProducts(response.data || []);
-    } catch (error) {
-      console.error("Error searching products:", error);
-    }
+    fetchProducts(1, query, "");
   };
 
-  const handleCategoryChange = async (e) => {
+  const handleCategoryChange = (e) => {
     const categoryId = e.target.value;
     setSelectedCategory(categoryId);
     setSearchTerm("");
     setCurrentPage(1); // Reset to first page on category change
-    setLoading(true);
 
-    try {
-      if (categoryId === "") {
-        await fetchProducts();
-      } else {
-        const response = await searchProductsByCategory(categoryId);
-        setProducts(response.data || []);
-      }
-    } catch (error) {
-      console.error("Error filtering products:", error);
-      toast.error("Failed to filter products");
-    } finally {
-      setLoading(false);
-    }
+    fetchProducts(1, "", categoryId);
   };
 
   if (loading) {
@@ -141,12 +132,14 @@ const Products = () => {
   }
 
   // Pagination Logic
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
+  const indexOfLastItem = Math.min(currentPage * itemsPerPage, totalProducts);
+  const indexOfFirstItem = (currentPage - 1) * itemsPerPage;
+  const currentProducts = products;
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    fetchProducts(pageNumber, searchTerm, selectedCategory);
+  };
 
   return (
     <div className="space-y-8 animate-fade-in-up">
@@ -370,18 +363,15 @@ const Products = () => {
         </div>
 
         {/* Pagination Controls */}
-        {products.length > itemsPerPage && (
+        {totalProducts > itemsPerPage && (
           <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 flex items-center justify-between">
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
                   Showing{" "}
                   <span className="font-medium">{indexOfFirstItem + 1}</span> to{" "}
-                  <span className="font-medium">
-                    {Math.min(indexOfLastItem, products.length)}
-                  </span>{" "}
-                  of <span className="font-medium">{products.length}</span>{" "}
-                  results
+                  <span className="font-medium">{indexOfLastItem}</span> of{" "}
+                  <span className="font-medium">{totalProducts}</span> results
                 </p>
               </div>
               <div>

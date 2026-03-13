@@ -58,7 +58,9 @@ const UserProducts = () => {
   useEffect(() => {
     if (!initialFilterApplied) return;
 
-    const hasFilters = Object.keys(activeFilters).some((key) => activeFilters[key]);
+    const hasFilters = Object.keys(activeFilters).some(
+      (key) => activeFilters[key],
+    );
 
     if (!hasFilters) {
       fetchProducts(currentPage);
@@ -68,7 +70,8 @@ const UserProducts = () => {
   const syncFiltersToUrl = (filters) => {
     const params = new URLSearchParams();
     if (filters.categoryId) params.set("categoryId", filters.categoryId);
-    if (filters.subCategories) params.set("subCategories", filters.subCategories);
+    if (filters.subCategories)
+      params.set("subCategories", filters.subCategories);
     if (filters.search) params.set("search", filters.search);
     if (filters.minPrice) params.set("minPrice", filters.minPrice);
     if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
@@ -101,7 +104,7 @@ const UserProducts = () => {
     if (filters.categoryId) {
       const targetIds = [String(filters.categoryId)];
       if (filters.subCategories) {
-        targetIds.push(...filters.subCategories.split(','));
+        targetIds.push(...filters.subCategories.split(","));
       }
       result = result.filter((p) => {
         const pCategoryId = String(p.Category?._id);
@@ -179,7 +182,9 @@ const UserProducts = () => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
 
-    const hasFilters = Object.keys(activeFilters).some((key) => activeFilters[key]);
+    const hasFilters = Object.keys(activeFilters).some(
+      (key) => activeFilters[key],
+    );
 
     if (hasFilters) {
       const startIndex = (page - 1) * limit;
@@ -188,10 +193,10 @@ const UserProducts = () => {
       if (activeFilters.categoryId) {
         const targetIds = [String(activeFilters.categoryId)];
         if (activeFilters.subCategories) {
-          targetIds.push(...activeFilters.subCategories.split(','));
+          targetIds.push(...activeFilters.subCategories.split(","));
         }
-        result = result.filter(
-          (p) => targetIds.includes(String(p.Category?._id))
+        result = result.filter((p) =>
+          targetIds.includes(String(p.Category?._id)),
         );
       }
       if (activeFilters.search) {
@@ -203,12 +208,18 @@ const UserProducts = () => {
             p.description?.toLowerCase().includes(searchLower),
         );
       }
-      if (activeFilters.minPrice && !isNaN(parseFloat(activeFilters.minPrice))) {
+      if (
+        activeFilters.minPrice &&
+        !isNaN(parseFloat(activeFilters.minPrice))
+      ) {
         result = result.filter(
           (p) => parseFloat(p.basePrice) >= parseFloat(activeFilters.minPrice),
         );
       }
-      if (activeFilters.maxPrice && !isNaN(parseFloat(activeFilters.maxPrice))) {
+      if (
+        activeFilters.maxPrice &&
+        !isNaN(parseFloat(activeFilters.maxPrice))
+      ) {
         result = result.filter(
           (p) => parseFloat(p.basePrice) <= parseFloat(activeFilters.maxPrice),
         );
@@ -249,7 +260,9 @@ const UserProducts = () => {
     return pages;
   };
 
-  const hasActiveFilters = Object.keys(activeFilters).some((key) => activeFilters[key]);
+  const hasActiveFilters = Object.keys(activeFilters).some(
+    (key) => activeFilters[key],
+  );
   const startItem = (currentPage - 1) * limit + 1;
   const endItem = Math.min(currentPage * limit, totalProducts);
 
@@ -276,21 +289,23 @@ const UserProducts = () => {
               <X size={20} />
             </button>
           </div>
-          <ProductsSidBar onFilterChange={handleFilterChange} activeFilters={activeFilters} />
+          <ProductsSidBar
+            onFilterChange={handleFilterChange}
+            activeFilters={activeFilters}
+          />
         </div>
       </aside>
 
       <main className="flex-1 h-full overflow-y-auto w-full relative custom-scrollbar">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8">
-          
           <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-100 pb-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2">
                 The Collection
               </h1>
               <p className="text-gray-500 text-sm tracking-wide font-light">
-                {totalProducts > 0 
-                  ? `Showing ${startItem}-${endItem} of ${totalProducts} products` 
+                {totalProducts > 0
+                  ? `Showing ${startItem}-${endItem} of ${totalProducts} products`
                   : "Discover our premium selection"}
               </p>
             </div>
@@ -318,7 +333,9 @@ const UserProducts = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32">
               <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-sm font-medium tracking-widest uppercase text-gray-400">Loading collection...</p>
+              <p className="text-sm font-medium tracking-widest uppercase text-gray-400">
+                Loading collection...
+              </p>
             </div>
           ) : (
             <>
@@ -338,7 +355,12 @@ const UserProducts = () => {
                     <div className="flex items-center gap-1 mx-4">
                       {getPageNumbers().map((page, index) =>
                         page === "..." ? (
-                          <span key={`dots-${index}`} className="px-2 text-gray-400">...</span>
+                          <span
+                            key={`dots-${index}`}
+                            className="px-2 text-gray-400"
+                          >
+                            ...
+                          </span>
                         ) : (
                           <button
                             key={page}

@@ -70,7 +70,16 @@ exports.createProduct = asyncHandler(async (req, res) => {
 });
 
 exports.getProducts = asyncHandler(async (req, res) => {
-  const { page, limit } = req.query;
+  const { page, limit, search, category } = req.query;
+
+  const query = {};
+  if (search) {
+    const regex = new RegExp(search, "i");
+    query.$or = [{ name: regex }, { description: regex }];
+  }
+  if (category) {
+    query.categoryId = category;
+  }
 
   // If pagination params are provided, paginate; otherwise return all
   let products;
@@ -83,18 +92,18 @@ exports.getProducts = asyncHandler(async (req, res) => {
     const limitNum = parseInt(limit, 10) || 10;
     const skip = (pageNum - 1) * limitNum;
 
-    totalProducts = await Product.countDocuments({});
+    totalProducts = await Product.countDocuments(query);
     totalPages = Math.ceil(totalProducts / limitNum);
     currentPage = pageNum;
 
-    products = await Product.find({})
+    products = await Product.find(query)
       .populate("categoryId")
       .sort({ name: 1 }) // Sort A to Z (ascending)
       .skip(skip)
       .limit(limitNum);
   } else {
     // No pagination → return ALL products sorted A to Z
-    products = await Product.find({}).populate("categoryId").sort({ name: 1 }); // Sort A to Z (ascending)
+    products = await Product.find(query).populate("categoryId").sort({ name: 1 }); // Sort A to Z (ascending)
     totalProducts = products.length;
     totalPages = 1;
     currentPage = 1;
