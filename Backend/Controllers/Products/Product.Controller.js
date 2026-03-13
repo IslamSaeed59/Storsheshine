@@ -3,6 +3,33 @@ const ProductVariant = require("../../Models/Products/ProductVariant");
 const Category = require("../../Models/Products/Category");
 const asyncHandler = require("../../Middleware/asyncHandler");
 
+// Helper function to delete images from Cloudinary
+const deleteFromCloudinary = async (imageUrl) => {
+  if (!imageUrl) return;
+  try {
+    const cloudinary = require("cloudinary").v2;
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    const parts = imageUrl.split('/');
+    const uploadIndex = parts.indexOf('upload');
+    
+    if (uploadIndex !== -1) {
+      const pathParts = parts.slice(uploadIndex + 2);
+      const fullPath = pathParts.join('/'); 
+      const lastDot = fullPath.lastIndexOf('.');
+      const publicId = lastDot !== -1 ? fullPath.substring(0, lastDot) : fullPath;
+      
+      await cloudinary.uploader.destroy(publicId);
+    }
+  } catch (err) {
+    console.error("Cloudinary image deletion error:", err);
+  }
+};
+
 exports.createProduct = asyncHandler(async (req, res) => {
   const {
     name,
@@ -130,24 +157,51 @@ exports.updateProduct = asyncHandler(async (req, res) => {
     discount,
   } = req.body;
 
+  const oldProduct = await Product.findById(id);
+  if (!oldProduct) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  // Handle Cloudinary image deletion for replaced or removed images
+  if (req.body.hasOwnProperty('images') && Array.isArray(images)) {
+     const newImageUrls = images.filter(img => typeof img === 'string');
+     const imagesToDelete = oldProduct.images.filter(oldImg => !newImageUrls.includes(oldImg));
+     
+     if (imagesToDelete.length > 0) {
+       await Promise.all(imagesToDelete.map(img => deleteFromCloudinary(img)));
+     }
+  }
+
   const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
     new: true,
   });
 
-  if (!updatedProduct) {
-    res.status(404);
-    throw new Error("Product not found");
-  }
   res.json(updatedProduct);
 });
 
 exports.deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const product = await Product.findByIdAndDelete(id);
+  const product = await Product.findById(id);
+  
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
   }
+
+  // Delete all product images from Cloudinary
+  if (product.images && product.images.length > 0) {
+     await Promise.all(product.images.map(img => deleteFromCloudinary(img)));
+  }
+
+  // Delete all associated variant images from Cloudinary
+  const variants = await ProductVariant.find({ productId: id });
+  for (const variant of variants) {
+     if (variant.imageVariant) await deleteFromCloudinary(variant.imageVariant);
+     if (variant.sizeChart) await deleteFromCloudinary(variant.sizeChart);
+  }
+
+  await Product.findByIdAndDelete(id);
   await ProductVariant.deleteMany({ productId: id });
   res.json({ message: "Product removed" });
 });
@@ -175,24 +229,42 @@ exports.getCategoryById = asyncHandler(async (req, res) => {
 
 exports.updateCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const updatedCategory = await Category.findByIdAndUpdate(id, req.body, {
-    new: true,
-  });
-  if (!updatedCategory) {
+
+  const oldCategory = await Category.findById(id);
+  if (!oldCategory) {
     res.status(404);
     throw new Error("Category not found");
   }
+
+  // If the image is being changed (or removed entirely), delete the old image from Cloudinary
+  if (req.body.hasOwnProperty('image') && req.body.image !== oldCategory.image && oldCategory.image) {
+     await deleteFromCloudinary(oldCategory.image);
+  }
+
+  const updatedCategory = await Category.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
+  
   res.json(updatedCategory);
 });
 
 exports.deleteCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  await Category.deleteMany({ parentId: id });
-  const deleted = await Category.findByIdAndDelete(id);
-  if (!deleted) {
+  
+  const categoryToDelete = await Category.findById(id);
+  if (!categoryToDelete) {
     res.status(404);
     throw new Error("Category not found");
   }
+
+  // Delete associated image from Cloudinary if it exists
+  if (categoryToDelete.image) {
+     await deleteFromCloudinary(categoryToDelete.image);
+  }
+
+  await Category.deleteMany({ parentId: id });
+  await Category.findByIdAndDelete(id);
+  
   res.json({ message: "Category removed" });
 });
 
@@ -229,23 +301,43 @@ exports.getProductVariantById = asyncHandler(async (req, res) => {
 
 exports.updateProductVariant = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const updatedVariant = await ProductVariant.findByIdAndUpdate(id, req.body, {
-    new: true,
-  });
-  if (!updatedVariant) {
+
+  const oldVariant = await ProductVariant.findById(id);
+  if (!oldVariant) {
     res.status(404);
     throw new Error("Variant not found");
   }
+
+  // Check if imageVariant was updated/removed
+  if (req.body.hasOwnProperty('imageVariant') && req.body.imageVariant !== oldVariant.imageVariant && oldVariant.imageVariant) {
+     await deleteFromCloudinary(oldVariant.imageVariant);
+  }
+
+  // Check if sizeChart was updated/removed
+  if (req.body.hasOwnProperty('sizeChart') && req.body.sizeChart !== oldVariant.sizeChart && oldVariant.sizeChart) {
+     await deleteFromCloudinary(oldVariant.sizeChart);
+  }
+
+  const updatedVariant = await ProductVariant.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
+  
   res.json(updatedVariant);
 });
 
 exports.deleteProductVariant = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const deleted = await ProductVariant.findByIdAndDelete(id);
-  if (!deleted) {
+  const variant = await ProductVariant.findById(id);
+  
+  if (!variant) {
     res.status(404);
     throw new Error("Variant not found");
   }
+
+  if (variant.imageVariant) await deleteFromCloudinary(variant.imageVariant);
+  if (variant.sizeChart) await deleteFromCloudinary(variant.sizeChart);
+
+  await ProductVariant.findByIdAndDelete(id);
   res.json({ message: "Variant removed" });
 });
 

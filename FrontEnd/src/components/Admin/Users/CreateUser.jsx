@@ -65,7 +65,7 @@ const CreateUser = () => {
         {...register(name, { required })}
         className={`mt-1 block w-full px-3 py-2 bg-white border ${
           error ? "border-red-500" : "border-gray-300"
-        } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm`}
+        } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-gray-800 focus:border-gray-800 sm:text-sm`}
         {...props}
       />
       {error && <p className="mt-1 text-xs text-red-600">{error.message}</p>}
@@ -76,7 +76,7 @@ const CreateUser = () => {
     <div>
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-pink-600 hover:text-pink-800 font-medium transition-colors"
+        className="flex items-center gap-2 text-gray-900 hover:text-black font-medium transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
         <span>Back to Users</span>
@@ -147,7 +147,7 @@ const CreateUser = () => {
               {...register("role", { required: "Role is required." })}
               className={`mt-1 block w-full px-3 py-2 bg-white border ${
                 errors.role ? "border-red-500" : "border-gray-300"
-              } rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm`}
+              } rounded-md shadow-sm focus:outline-none focus:ring-gray-800 focus:border-gray-800 sm:text-sm`}
               defaultValue="user"
             >
               <option value="user">User</option>
@@ -161,8 +161,8 @@ const CreateUser = () => {
 
           {/* Employee-specific fields, shown conditionally */}
           {selectedRole === "employee" && (
-            <div className="p-4 bg-pink-50 border border-pink-200 rounded-lg space-y-6">
-              <h3 className="text-lg font-semibold text-pink-800">
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-6">
+              <h3 className="text-lg font-semibold text-black">
                 Employee Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -190,7 +190,7 @@ const CreateUser = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[#cc1f69] hover:bg-[#a91853] text-white font-semibold py-2 px-6 rounded-lg shadow transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#cc1f69] disabled:bg-pink-300 disabled:cursor-not-allowed"
+              className="bg-gray-900 hover:bg-[#a91853] text-white font-semibold py-2 px-6 rounded-lg shadow transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#111827] disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Saving..." : "Create User"}
             </button>

@@ -70,6 +70,7 @@ const profileRoutes = require("./Routing/User/Profile.Routes.js");
 const employeeRoutes = require("./Routing/User/Employee.Routes.js");
 const productRoutes = require("./Routing/Products/Products.Routes.js");
 const uploadRoutes = require("./Routing/uploadRoutes.js");
+const mainPageRoutes = require("./Routing/MainPage/MainPage.Route.js");
 
 // API Routes
 app.get("/", (req, res) => {
@@ -81,6 +82,7 @@ app.use("/api/profiles", profileRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/mainpage", mainPageRoutes);
 
 // 🏥 Health Check Endpoint
 app.get("/api/health", (req, res) => {

@@ -4,8 +4,8 @@ import { Link, NavLink } from "react-router-dom";
 
 const SidebarEmployee = () => {
   const navLinkClasses =
-    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 font-medium text-xl transition-all duration-200 hover:bg-[#cc1f69] hover:text-white";
-  const activeNavLinkClasses = "bg-[#cc1f69] text-white";
+    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 font-medium text-xl transition-all duration-200 hover:bg-gray-900 hover:text-white";
+  const activeNavLinkClasses = "bg-gray-900 text-white";
 
   return (
     <div className="flex min-h-screen w-64 flex-col bg-white shadow-lg ">
@@ -13,7 +13,7 @@ const SidebarEmployee = () => {
         <Link
           to="/Employee"
           className="text-3xl font-bold"
-          style={{ color: "#cc1f69" }}
+          style={{ color: "#111827" }}
         >
           SheShine
         </Link>

@@ -60,7 +60,7 @@ const Login = () => {
               <img
                 src="https://placehold.co/100x100/cc1f69/FFFFFF/png?text=SheShine"
                 alt="SheShine Logo"
-                className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-pink-100 shadow-md"
+                className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-gray-100 shadow-md"
               />
               <h1 className="text-3xl font-bold text-gray-800">
                 Welcome Back!
@@ -88,7 +88,7 @@ const Login = () => {
                   })}
                   className={`w-full pl-10 pr-3 py-3 bg-gray-50 border ${
                     errors.email ? "border-red-500" : "border-gray-200"
-                  } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500`}
+                  } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-800`}
                 />
                 {errors.email && (
                   <p className="mt-1 text-xs text-red-600">
@@ -112,7 +112,7 @@ const Login = () => {
                   })}
                   className={`w-full pl-10 pr-3 py-3 bg-gray-50 border ${
                     errors.password ? "border-red-500" : "border-gray-200"
-                  } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500`}
+                  } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-800`}
                 />
                 {errors.password && (
                   <p className="mt-1 text-xs text-red-600">
@@ -124,7 +124,7 @@ const Login = () => {
               <div className="text-right">
                 <Link
                   to="/forgot-password"
-                  className="text-sm font-medium text-pink-600 hover:text-pink-800"
+                  className="text-sm font-medium text-gray-900 hover:text-black"
                 >
                   Forgot Password?
                 </Link>
@@ -134,7 +134,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#cc1f69] hover:bg-[#a91853] text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 disabled:bg-pink-300 disabled:cursor-not-allowed"
+                className="w-full bg-gray-900 hover:bg-[#a91853] text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Signing In..." : "Sign In"}
               </button>

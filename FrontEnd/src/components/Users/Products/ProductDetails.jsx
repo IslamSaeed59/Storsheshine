@@ -32,7 +32,7 @@ const ProductDetails = () => {
         {/* الشعار - تأثير واحد فقط */}
         <div className="relative mb-8">
           {/* دائرة خلفية واحدة وناعمة */}
-          <div className="absolute inset-0 rounded-full bg-blue-100 animate-pulse opacity-30 blur-sm"></div>
+          <div className="absolute inset-0 rounded-full bg-zinc-100 animate-pulse opacity-30 blur-sm"></div>
 
           {/* الشعار الرئيسي - حركة واحدة بسيطة */}
           <img
@@ -46,15 +46,15 @@ const ProductDetails = () => {
           {/* نقاط متحركة - تصميم أنظف */}
           <div className="flex justify-center space-x-2 rtl:space-x-reverse">
             <div
-              className="w-3 h-3 bg-blue-500 rounded-full animate-fade"
+              className="w-3 h-3 bg-zinc-800 rounded-full animate-fade"
               style={{ animationDelay: "0s" }}
             ></div>
             <div
-              className="w-3 h-3 bg-blue-500 rounded-full animate-fade"
+              className="w-3 h-3 bg-zinc-800 rounded-full animate-fade"
               style={{ animationDelay: "0.2s" }}
             ></div>
             <div
-              className="w-3 h-3 bg-blue-500 rounded-full animate-fade"
+              className="w-3 h-3 bg-zinc-800 rounded-full animate-fade"
               style={{ animationDelay: "0.4s" }}
             ></div>
           </div>
@@ -75,7 +75,7 @@ const ProductDetails = () => {
           </p>
           <button
             onClick={() => window.history.back()}
-            className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="mt-6 px-6 py-2 bg-zinc-900 text-white rounded-lg hover:bg-black transition-colors"
           >
             العودة للصفحة السابقة
           </button>

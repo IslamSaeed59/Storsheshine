@@ -11,21 +11,26 @@ import CreateUser from "./components/Admin/Users/CreateUser";
 import UpdateUser from "./components/Admin/Users/UpdateUser";
 import UpdateProfile from "./components/Admin/Users/UpdateProfile";
 import ProfilePage from "./components/Admin/Users/ProfilePage";
+import MainPageAdmin from "./components/Admin/MainPage/MainPageAdmin";
 import Admin from "./components/protection/Admin";
 import Employee from "./components/protection/Employee";
 import EmployeeLayout from "./Layout/Employee/EmployeeLayout";
 import UsersLayout from "./Layout/Users/UsersLayout";
 import Home from "./components/Users/MainPage/Home";
 import CreateCategory from "./components/Admin/Category/CreateCategory";
+import UpdateCategory from "./components/Admin/Category/UpdateCategory";
 import Category from "./components/Admin/Category/Category";
 import ProductCard from "./components/Admin/Products/ProductCard";
 import UserProducts from "./components/Users/Products/UserProducts";
 import ProductDetails from "./components/Users/Products/ProductDetails";
+import CartDrawer from "./components/Users/Cart/CartDrawer";
+import ScrollToTop from "./components/utils/ScrollToTop";
 
 const App = () => {
   return (
     <>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
@@ -36,9 +41,13 @@ const App = () => {
               </Admin>
             }
           >
+
+            {/* Main Page */}
+            <Route path="mainpage" element={<MainPageAdmin />} />
             {/* Category */}
             <Route path="category" element={<Category />} />
             <Route path="category/create" element={<CreateCategory />} />
+            <Route path="category/update/:id" element={<UpdateCategory />} />
             {/* Products */}
             <Route index element={<Products />} />
             <Route path="products" element={<Products />} />
@@ -69,6 +78,8 @@ const App = () => {
             {/* UserProducts */}
             <Route path="Products" element={<UserProducts />} />
             <Route path="Product/:id" element={<ProductDetails />} />
+            <Route path="cart" element={<CartDrawer />} />
+
           </Route>
         </Routes>
       </Router>

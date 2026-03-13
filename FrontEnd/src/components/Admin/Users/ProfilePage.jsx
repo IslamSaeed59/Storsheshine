@@ -120,7 +120,7 @@ const ProfilePage = () => {
       case "Processing":
         return "bg-yellow-100 text-yellow-800";
       case "Shipped":
-        return "bg-blue-100 text-blue-800";
+        return "bg-zinc-100 text-black";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -128,9 +128,9 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-rose-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-rose-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading your beauty profile...</p>
         </div>
       </div>
@@ -139,12 +139,12 @@ const ProfilePage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-rose-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-rose-50">
         <div className="text-center text-red-500 bg-white p-8 rounded-xl shadow-lg">
           <p className="text-xl">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+            className="mt-4 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black"
           >
             Try Again
           </button>
@@ -155,12 +155,12 @@ const ProfilePage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-rose-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-rose-50">
         <div className="text-center bg-white p-8 rounded-xl shadow-lg">
           <p className="text-xl text-gray-600">User not found.</p>
           <Link
             to="/"
-            className="mt-4 inline-block px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+            className="mt-4 inline-block px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black"
           >
             Return to Home
           </Link>
@@ -170,12 +170,12 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
           <div className="relative">
-            <div className="h-48 bg-gradient-to-r from-pink-400 via-rose-400 to-purple-400"></div>
+            <div className="h-48 bg-gradient-to-r from-gray-400 via-rose-400 to-purple-400"></div>
             <div className="absolute -bottom-16 left-8">
               <div className="relative">
                 <img
@@ -198,14 +198,14 @@ const ProfilePage = () => {
                   <span>@{user.email.split("@")[0]}</span>
                   <span className="text-gray-300">•</span>
                   <span className="flex items-center gap-1">
-                    <Award size={16} className="text-pink-500" />
+                    <Award size={16} className="text-gray-800" />
                     Beauty Insider
                   </span>
                 </p>
               </div>
               <Link
                 to={`/admin/profiles/update/${user.id}`}
-                className="flex items-center gap-2 bg-gradient-to-r from-pink-600 to-rose-600 text-white px-6 py-3 rounded-xl hover:from-pink-700 hover:to-rose-700 transition-all transform hover:scale-105 shadow-md"
+                className="flex items-center gap-2 bg-gradient-to-r from-gray-900 to-rose-600 text-white px-6 py-3 rounded-xl hover:from-black hover:to-rose-700 transition-all transform hover:scale-105 shadow-md"
               >
                 <Edit size={18} />
                 <span>Edit Profile</span>
@@ -218,8 +218,8 @@ const ProfilePage = () => {
         <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-pink-100 rounded-lg">
-                <ShoppingBag size={20} className="text-pink-600" />
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <ShoppingBag size={20} className="text-gray-900" />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Total Orders</p>
@@ -250,13 +250,13 @@ const ProfilePage = () => {
                   onClick={() => setActiveTab(tab)}
                   className={`px-6 py-4 text-sm font-medium capitalize transition-colors relative ${
                     activeTab === tab
-                      ? "text-pink-600 border-b-2 border-pink-600"
+                      ? "text-gray-900 border-b-2 border-gray-900"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   {tab}
                   {tab === "wishlist" && (
-                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-gray-800 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       3
                     </span>
                   )}
@@ -272,7 +272,7 @@ const ProfilePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
-                  <User size={20} className="text-pink-500" />
+                  <User size={20} className="text-gray-800" />
                   Contact Information
                 </h2>
                 <InfoItem
@@ -296,7 +296,7 @@ const ProfilePage = () => {
               </div>
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
-                  <Calendar size={20} className="text-pink-500" />
+                  <Calendar size={20} className="text-gray-800" />
                   Account Details
                 </h2>
                 <InfoItem
@@ -339,7 +339,7 @@ const ProfilePage = () => {
                         >
                           {order.status}
                         </span>
-                        <span className="font-bold text-pink-600">
+                        <span className="font-bold text-gray-900">
                           ${order.total}
                         </span>
                       </div>
@@ -352,7 +352,7 @@ const ProfilePage = () => {
                         </span>
                       ))}
                     </div>
-                    <button className="mt-2 text-pink-600 text-sm hover:text-pink-700 font-medium">
+                    <button className="mt-2 text-gray-900 text-sm hover:text-black font-medium">
                       View Details →
                     </button>
                   </div>
@@ -383,10 +383,10 @@ const ProfilePage = () => {
                       </h3>
                       <p className="text-sm text-gray-500">{item.brand}</p>
                       <div className="flex justify-between items-center mt-2">
-                        <span className="font-bold text-pink-600">
+                        <span className="font-bold text-gray-900">
                           ${item.price}
                         </span>
-                        <button className="text-pink-600 hover:text-pink-700 text-sm font-medium">
+                        <button className="text-gray-900 hover:text-black text-sm font-medium">
                           Add to Cart
                         </button>
                       </div>
@@ -442,7 +442,7 @@ const ProfilePage = () => {
 
 const InfoItem = ({ icon, label, value }) => (
   <div className="flex items-start gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-colors">
-    <div className="flex-shrink-0 text-gray-400 group-hover:text-pink-500 transition-colors">
+    <div className="flex-shrink-0 text-gray-400 group-hover:text-gray-800 transition-colors">
       {icon}
     </div>
     <div className="flex-1">

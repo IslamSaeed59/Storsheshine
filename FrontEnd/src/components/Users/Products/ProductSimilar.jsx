@@ -5,15 +5,16 @@ import { Sparkles } from "lucide-react";
 
 const ProductSimilar = ({ categoryId, currentProductId }) => {
   const [similarProducts, setSimilarProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSimilar = async () => {
       if (!categoryId) return;
+      setLoading(true);
 
       try {
         const response = await getProductsByCategory(categoryId);
-        console.log("Similar Products Response:", response.data);
-        const products = response.data || [];
+        const products = response.data.products || response.data || [];
 
         // Filter out the current product
         const filtered = products.filter((p) => p._id !== currentProductId);
@@ -26,29 +27,36 @@ const ProductSimilar = ({ categoryId, currentProductId }) => {
         setSimilarProducts(randomSelection);
       } catch (error) {
         console.error("Error fetching similar products:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchSimilar();
   }, [categoryId, currentProductId]);
 
-  if (similarProducts.length === 0) return null;
+  if (!loading && similarProducts.length === 0) return null;
 
   return (
-    <div className="py-16 bg-gradient-to-b from-white to-pink-50/30 border-t border-pink-100">
+    <div className="py-24 bg-white border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <span className="inline-flex items-center justify-center p-3 bg-pink-100 rounded-full mb-4 shadow-sm">
-            <Sparkles className="text-pink-500" size={24} />
-          </span>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            You Might Also Like
+        <div className="flex flex-col items-center justify-center text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl font-serif font-medium text-gray-900 mb-4">
+            You May Also Like
           </h2>
-          <p className="text-gray-500 max-w-2xl mx-auto">
-            Discover more items that complement your style
+          <div className="w-12 h-px bg-gray-900 mb-4"></div>
+          <p className="text-gray-500 text-sm tracking-wide font-light max-w-xl">
+            Explore curated pieces that perfectly complement your style, handpicked just for you from our wider collection.
           </p>
         </div>
-        <ProductsGrid products={similarProducts} />
+        
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <ProductsGrid products={similarProducts} />
+        )}
       </div>
     </div>
   );

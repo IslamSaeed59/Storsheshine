@@ -1,46 +1,23 @@
-import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-
-import { Menu, X, Sparkles, LayoutDashboard, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, LayoutDashboard, LogOut,  User, Heart } from "lucide-react";
 import { toast } from "react-toastify";
-
-const PromotionalBar = () => {
-  const text =
-    "✨ Today’s deal: Buy X and get Y% off! 💅 New arrivals just landed — check them out! 🎁 Free shipping on all orders over $50! 🔥 Limited time offer — don’t miss out!";
-
-  return (
-    <div className="relative bg-[#cc1f69] text-white text-sm font-semibold overflow-hidden w-full h-10 flex items-center">
-      <motion.div
-        className="absolute flex items-center gap-12 whitespace-nowrap"
-        initial={{ x: "100%" }}
-        animate={{ x: "-100%" }}
-        transition={{
-          ease: "linear",
-          duration: 15, // السرعة
-          repeat: Infinity,
-        }}
-      >
-        {[...Array(1)].map((_, i) => (
-          <div
-            key={i}
-            className="inline-flex items-center gap-3 px-6 whitespace-nowrap"
-          >
-            <Sparkles className="w-4 h-4 text-yellow-300 flex-shrink-0" />
-            <span className="whitespace-nowrap">{text}</span>
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  );
-};
 
 const UserTopBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [keyword, setKeyword] = useState("");
-  const [isFavoriteOpen, setIsFavoriteOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -49,152 +26,158 @@ const UserTopBar = () => {
     toast.dark("Logout successful!");
   };
 
-  const toggleFavoriteSidebar = () => {
-    setIsFavoriteOpen(!isFavoriteOpen);
-  };
-
   const user = JSON.parse(localStorage.getItem("user"));
 
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
-    // { name: "Bags", path: "/products/bags" },
-    // { name: "Dresses", path: "/products/dresses" },
-    // { name: "Sale", path: "/sale" },
   ];
 
-  const activeLinkStyle = {
-    color: "#cc1f69",
-    textDecoration: "underline",
-    textUnderlineOffset: "8px",
-  };
+  // Determine navbar styling based on scroll state and whether it's the home page
+  const navbarClasses = `fixed w-full top-0 z-40 transition-all duration-300 ease-in-out ${
+    scrolled || !isHomePage
+      ? "bg-white/90 backdrop-blur-md shadow-sm text-gray-900 py-3"
+      : "bg-transparent text-white py-5"
+  }`;
+
+  const navItemClass = (isActive) =>
+    `relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary ${
+      isActive ? "text-primary" : ""
+    }`;
+
+  const iconClass = `transition-colors hover:text-primary cursor-pointer`;
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-40">
-      {/* <PromotionalBar /> */}
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="text-3xl font-bold tracking-wider">
-              She<span style={{ color: "#cc1f69" }}>shine</span>
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-8">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.name}
-                to={link.path}
-                style={({ isActive }) =>
-                  isActive ? activeLinkStyle : undefined
-                }
-                className="text-gray-600 hover:text-[#cc1f69] text-sm font-medium transition-colors duration-300"
-              >
-                {link.name}
-              </NavLink>
-            ))}
-          </div>
-
-          {/* Icons and Mobile Menu Button */}
-          <div className="flex items-center space-x-4">
-            {/* <button
-              onClick={toggleFavoriteSidebar}
-              className="text-gray-500 hover:text-[#cc1f69] transition-colors"
-            >
-              <Heart size={22} />
-            </button>
-            <Link
-              to="/cart"
-              className="relative text-gray-500 hover:text-[#cc1f69] transition-colors"
-            >
-              <ShoppingBag size={22} />
-              <span className="absolute -top-2 -right-2 flex items-center justify-center h-5 w-5 rounded-full bg-[#cc1f69] text-white text-xs font-bold">
-                3
-              </span>
-            </Link>
-            <Link
-              to={user?.id ? `/Profile/${user.id}` : "/Profile/guest"}
-              className="hidden sm:block text-gray-500 hover:text-[#cc1f69] transition-colors"
-            >
-              <User size={22} />
-            </Link> */}
-
-            {user && user.role === "admin" && (
-              <Link
-                to="/admin"
-                className="text-gray-500 hover:text-[#cc1f69] transition-colors"
-                title="Admin Dashboard"
-              >
-                <LayoutDashboard size={22} />
-              </Link>
-            )}
-
-            <button
-              onClick={handleLogout}
-              className="hidden lg:block text-gray-500 hover:text-[#cc1f69] transition-colors"
-            >
-              <LogOut size={22} />
-            </button>
-
-            {/* Mobile menu button */}
-            <div className="lg:hidden">
+    <>
+      <header className={navbarClasses}>
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            
+            {/* Mobile menu button & Icons (Left side on mobile) */}
+            <div className="flex items-center lg:hidden w-1/3">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-gray-500 hover:text-[#cc1f69] transition-colors"
+                className="hover:text-primary transition-colors focus:outline-none -ml-2 p-2"
               >
-                {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
-          </div>
-        </div>
-      </nav>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-200">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.name}
-                to={link.path}
-                onClick={() => setIsMenuOpen(false)}
-                style={({ isActive }) =>
-                  isActive ? activeLinkStyle : undefined
-                }
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#cc1f69] hover:bg-gray-50"
-              >
-                {link.name}
-              </NavLink>
-            ))}
-            <NavLink
-              to={user?.id ? `/Profile/${user.id}` : "/Profile/guest"}
-              onClick={() => setIsMenuOpen(false)}
-              className="sm:hidden block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#cc1f69] hover:bg-gray-50"
-            >
-              Profile
-            </NavLink>
+            {/* Desktop Navigation (Left side on desktop) */}
+            <div className="hidden lg:flex lg:items-center lg:space-x-10 w-1/3">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.name}
+                  to={link.path}
+                  className={({ isActive }) => navItemClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      <span className="relative z-10 tracking-wide uppercase text-xs">{link.name}</span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="navbar-indicator"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                          calcMode="spring"
+                          transition={{ bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
 
-            {user && user.role === "admin" && (
-              <NavLink
-                to="/admin"
-                onClick={() => setIsMenuOpen(false)}
-                className="sm:hidden block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#cc1f69] hover:bg-gray-50"
-              >
-                Admin Dashboard
-              </NavLink>
-            )}
-            <button
-              onClick={handleLogout}
-              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#cc1f69] hover:bg-gray-50"
-            >
-              Logout
-            </button>
+            {/* Logo (Center) */}
+            <div className="flex-shrink-0 flex justify-center w-1/3">
+              <Link to="/" className="text-3xl font-serif font-bold tracking-widest flex items-center">
+                SHE<span className={scrolled || !isHomePage ? "text-primary" : "text-white"}>SHINE</span>
+              </Link>
+            </div>
+
+            {/* Icons (Right Side) */}
+            <div className="flex items-center justify-end space-x-5 w-1/3">
+              
+              <div className="hidden sm:flex items-center space-x-5">
+                {user && user.role === "admin" && (
+                  <Link to="/admin" className={iconClass} title="Admin Dashboard">
+                    <LayoutDashboard size={20} />
+                  </Link>
+                )}
+
+                <Link to={user?.id ? `/Profile/${user.id}` : "/login"} className={iconClass}>
+                  <User size={20} />
+                </Link>
+
+                {user && (
+                  <button onClick={handleLogout} className={iconClass} title="Logout">
+                    <LogOut size={20} />
+                  </button>
+                )}
+              </div>
+
+
+            </div>
           </div>
-        </div>
-      )}
-    </header>
+        </nav>
+      </header>
+
+  
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-30 bg-white pt-24 px-6 lg:hidden overflow-y-auto"
+          >
+            <div className="flex flex-col space-y-6 text-center">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.name}
+                  to={link.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `text-2xl font-serif tracking-widest ${
+                      isActive ? "text-primary" : "text-gray-900"
+                    }`
+                  }
+                >
+                  {link.name}
+                </NavLink>
+              ))}
+              
+              <div className="w-16 h-px bg-gray-200 mx-auto my-4"></div>
+
+              <div className="flex justify-center space-x-8 text-gray-600">
+                <Link to={user?.id ? `/Profile/${user.id}` : "/login"} onClick={() => setIsMenuOpen(false)} className="flex flex-col items-center hover:text-primary">
+                  <User size={24} className="mb-2" />
+                  <span className="text-xs uppercase tracking-wider">Profile</span>
+                </Link>
+                {user && (
+                  <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="flex flex-col items-center hover:text-primary">
+                    <LogOut size={24} className="mb-2" />
+                    <span className="text-xs uppercase tracking-wider">Logout</span>
+                  </button>
+                )}
+              </div>
+
+              {user && user.role === "admin" && (
+                <Link
+                  to="/admin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="mt-8 text-sm uppercase tracking-wider text-gray-500 hover:text-primary"
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

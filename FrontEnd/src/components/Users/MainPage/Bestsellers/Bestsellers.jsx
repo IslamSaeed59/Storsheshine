@@ -1,36 +1,26 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Heart, ShoppingCart } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { ArrowLeft, ArrowRight, ShoppingBag } from "lucide-react";
 import { getProducts } from "../../../../Services/api";
 import { useNavigate } from "react-router-dom";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
-const Bestsellers = () => {
+const Bestsellers = ({ offerData }) => {
   const [bestsellers, setBestsellers] = useState([]);
   const navigate = useNavigate();
+  const scrollContainerRef = useRef(null);
+
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = direction === "left" ? -400 : 400;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     const fetchBestsellers = async () => {
       try {
         const response = await getProducts();
-        const filtered = (response.data.products || []).filter(
-          (item) => item.isBestseller,
-        );
-        setBestsellers(filtered);
+        const filtered = (response.data.products || []).filter((item) => item.isBestseller);
+        setBestsellers(filtered); // Removed .slice(0, 4) to show all products
       } catch (error) {
         console.error("Error fetching bestsellers:", error);
       }
@@ -39,88 +29,134 @@ const Bestsellers = () => {
   }, []);
 
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section className="bg-white py-24 border-t border-gray-100 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <h2
-            className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900"
-            style={{ color: "#cc1f69" }}
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-end text-center md:text-left mb-16">
+          <div className="max-w-xl">
+            <h3 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
+              {offerData?.OfferName || "Our Bestsellers"}
+            </h3>
+            <h2 className="text-sm font-semibold tracking-[0.2em] uppercase text-primary mb-3">
+              {offerData?.OfferDescription || "Most Loved"}
+            </h2>
+          </div>
+          <button 
+            onClick={() => navigate('/products')}
+            className="mt-6 md:mt-0 flex items-center text-sm font-medium tracking-widest uppercase hover:text-primary transition-colors group"
           >
-            Our Bestsellers
-          </h2>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
-            Discover the styles our customers love the most.
-          </p>
-        </motion.div>
+            Shop All
+            <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+        </div>
 
         {bestsellers.length > 0 && (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8"
+          <div className="flex gap-2 mb-6 md:hidden justify-end">
+            {/* Optional visual indicator that it's scrollable on mobile */}
+            <span className="text-xs text-gray-400 font-medium uppercase tracking-widest">Swipe to explore</span>
+          </div>
+        )}
+
+        {bestsellers.length > 4 && (
+          <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 left-4 right-4 justify-between pointer-events-none z-10 w-full max-w-[90rem] mx-auto px-2">
+            <button 
+              onClick={() => scroll("left")}
+              className="w-12 h-12 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary hover:border-primary transition-colors pointer-events-auto"
+              aria-label="Scroll left"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <button 
+              onClick={() => scroll("right")}
+              className="w-12 h-12 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary hover:border-primary transition-colors pointer-events-auto"
+              aria-label="Scroll right"
+            >
+              <ArrowRight size={20} />
+            </button>
+          </div>
+        )}
+
+        <style>
+        {`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+          }
+        `}
+        </style>
+
+        {bestsellers.length > 0 && (
+          <div 
+            ref={scrollContainerRef}
+            className="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory hide-scrollbar"
           >
             {bestsellers.map((product) => (
-              <motion.div
+              <div
                 key={product._id || product.id}
-                variants={itemVariants}
-                className="group relative cursor-pointer"
-                onClick={() =>
-                  navigate(`/Product/${product._id || product.id}`)
-                }
+                className="group relative flex flex-col flex-none w-[45vw] sm:w-[45vw] md:w-[35vw] lg:w-[23vw] snap-center sm:snap-start"
               >
-                <div className="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 bg-gray-200 rounded-lg overflow-hidden">
+                <div 
+                  className="relative aspect-[3/4] mb-6 bg-gray-50 overflow-hidden cursor-pointer rounded-sm"
+                  onClick={() => navigate(`/Product/${product._id || product.id}`)}
+                >
                   <img
-                    src={
-                      product.images && product.images.length > 0
-                        ? product.images[0]
-                        : "/placeholder.png"
-                    }
+                    src={product.images && product.images.length > 0 ? product.images[0] : "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop"}
                     alt={product.name}
-                    className="w-full h-full object-center object-cover transition-all duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {/* <button className="p-3 bg-white rounded-full text-gray-700 hover:bg-[#cc1f69] hover:text-white transition-colors">
-                      <ShoppingCart size={20} />
+                  
+                  {/* Quick Add Button Overlay */}
+                  <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                    <button 
+                      className="w-full bg-white/95 backdrop-blur-sm text-gray-900 font-medium tracking-wide uppercase text-xs py-4 flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/Product/${product._id || product.id}`);
+                      }}
+                    >
+                      <ShoppingBag size={16} />
+                      Quick View
                     </button>
-                    <button className="p-3 bg-white rounded-full text-gray-700 hover:bg-[#cc1f69] hover:text-white transition-colors">
-                      <Heart size={20} />
-                    </button> */}
                   </div>
                 </div>
-                <h3 className="mt-3 text-sm text-gray-700 text-center sm:text-left">
-                  {product.name}
-                </h3>
-                <div className="mt-1 flex items-center justify-center sm:justify-start gap-2">
-                  {product.discount > 0 ? (
-                    <>
-                      <span className="text-base font-medium text-[#cc1f69]">
-                        $
-                        {(
-                          parseFloat(product.basePrice) *
-                          (1 - product.discount / 100)
-                        ).toFixed(2)}
-                      </span>
-                      <span className="text-sm text-gray-500 line-through">
+
+                <div className="flex flex-col flex-grow text-center">
+                  <h4 className="text-lg font-serif font-medium text-gray-900 mb-2 truncate px-2">
+                    {product.name}
+                  </h4>
+                  
+                  {/* Sizes display */}
+                  {product.ProductVariants && product.ProductVariants.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 mb-2 px-2">
+                      {[...new Set(product.ProductVariants.map(v => v.size).filter(s => s && s !== "NoSize"))].map((size, idx) => (
+                        <span key={idx} className="text-[10px] sm:text-xs font-medium text-gray-500 border border-gray-200 px-2 py-0.5 whitespace-nowrap">
+                          {size}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center gap-3">
+                    {product.discount > 0 ? (
+                      <>
+                        <span className="text-sm text-gray-400 line-through">
+                          ${parseFloat(product.basePrice).toFixed(2)}
+                        </span>
+                        <span className="text-base font-medium text-primary">
+                          ${(parseFloat(product.basePrice) * (1 - product.discount / 100)).toFixed(2)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-base font-medium text-gray-900">
                         ${parseFloat(product.basePrice).toFixed(2)}
                       </span>
-                    </>
-                  ) : (
-                    <span className="text-base font-medium text-gray-900">
-                      ${parseFloat(product.basePrice).toFixed(2)}
-                    </span>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         )}
       </div>
     </section>

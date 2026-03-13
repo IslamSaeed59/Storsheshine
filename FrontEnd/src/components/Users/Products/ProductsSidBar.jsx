@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { getCategories } from "../../../Services/api";
-import {
-  Search,
-  Filter,
-  Heart,
-  Sparkles,
-  X,
-  Check,
-  ChevronRight,
-  ChevronDown,
-} from "lucide-react";
+import { Search, X, ChevronRight, Check } from "lucide-react";
 
 const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
   const [categories, setCategories] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [filters, setFilters] = useState({
     categoryId: activeFilters.categoryId || "",
+    subCategories: activeFilters.subCategories || "",
     minPrice: activeFilters.minPrice || "",
     maxPrice: activeFilters.maxPrice || "",
     search: activeFilters.search || "",
@@ -24,6 +16,7 @@ const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
   useEffect(() => {
     setFilters({
       categoryId: activeFilters.categoryId || "",
+      subCategories: activeFilters.subCategories || "",
       minPrice: activeFilters.minPrice || "",
       maxPrice: activeFilters.maxPrice || "",
       search: activeFilters.search || "",
@@ -36,7 +29,6 @@ const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
         const response = await getCategories();
         const allCategories = response.data || [];
 
-        // Organize categories into parent-child structure
         const mainCategories = allCategories.filter((cat) => !cat.parentId);
         const organizedCategories = mainCategories.map((mainCat) => ({
           ...mainCat,
@@ -64,6 +56,7 @@ const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
     const newFilters = {
       ...filters,
       categoryId: filters.categoryId === categoryId ? "" : categoryId,
+      subCategories: "", // Clear subcategories when navigating to a new specific category
     };
     setFilters(newFilters);
     onFilterChange(newFilters);
@@ -85,6 +78,7 @@ const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
   const clearFilters = () => {
     const resetFilters = {
       categoryId: "",
+      subCategories: "",
       minPrice: "",
       maxPrice: "",
       search: "",
@@ -96,162 +90,143 @@ const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
   const hasActiveFilters = Object.values(filters).some((value) => value !== "");
 
   return (
-    <div className="">
-      {/* Header with gradient */}
-      <div className="bg-white p-5  border-pink-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-white rounded-lg shadow-sm">
-              <Filter size={16} className="text-pink-500" />
-            </div>
-            <h3 className="font-semibold text-gray-800">Filters</h3>
-          </div>
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="text-xs text-pink-500 hover:text-pink-600 font-medium flex items-center gap-1 bg-white px-2 py-1 rounded-full shadow-sm"
-            >
-              <span>Clear all</span>
-              <Sparkles size={12} />
-            </button>
-          )}
-        </div>
+    <div className="flex flex-col h-full bg-white border-r border-gray-100 pb-10">
+      {/* Header */}
+      <div className="px-6 py-8 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-sm z-10">
+        <h3 className="text-sm font-semibold tracking-[0.2em] uppercase text-gray-900">
+          Refine By
+        </h3>
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-xs uppercase tracking-widest text-primary hover:text-gray-900 transition-colors"
+          >
+            Clear All
+          </button>
+        )}
       </div>
 
-      {/* Search with feminine styling */}
-      <div className="p-5 border-b border-pink-100">
-        <div className="relative">
+      {/* Search Bar */}
+      <div className="p-6 border-b border-gray-100">
+        <div className="relative group">
           <input
             type="text"
             name="search"
             value={filters.search}
             onChange={handleInputChange}
-            placeholder="Search products..."
-            className="w-full pl-10 pr-8 py-2.5 text-sm border border-pink-200 rounded-xl focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 bg-pink-50/30 placeholder-pink-400 text-gray-700 transition-all"
+            placeholder="Search collections..."
+            className="w-full pl-0 pr-8 py-2 text-sm border-0 border-b border-gray-200 focus:ring-0 focus:border-gray-900 bg-transparent placeholder-gray-400 text-gray-900 transition-colors"
           />
           <Search
             size={16}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-400"
+            className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-gray-900 transition-colors"
           />
           {filters.search && (
             <button
               onClick={clearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-pink-300 hover:text-pink-500 transition-colors"
+              className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 transition-colors"
             >
               <X size={14} />
             </button>
           )}
         </div>
       </div>
-      <div className="h-1 bg-gradient-to-r from-pink-300 via-purple-300 to-pink-300"></div>
 
-      {/* Categories with feminine styling */}
-      <div className="p-5 border-b border-pink-100">
-        <h4 className="text-xs font-semibold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 uppercase tracking-wider mb-3 flex items-center gap-1">
-          Categories
-        </h4>
-        <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-pink-200">
-          <button
-            onClick={() => handleCategoryClick("")}
-            className={`w-full text-left px-3 py-2.5 text-sm rounded-xl transition-all flex items-center justify-between group ${
-              filters.categoryId === ""
-                ? "bg-pink-50 text-pink-600 font-semibold"
-                : "text-gray-600 hover:bg-gray-50 hover:text-pink-500"
-            }`}
-          >
-            <span className="flex items-center gap-2">All Categories</span>
-            {filters.categoryId === "" && (
-              <Check size={14} className="text-pink-500" />
-            )}
-          </button>
-          {categories.map((category) => {
-            const categoryId = category.id || category._id;
-            const isExpanded = expandedCategories[categoryId];
-            const hasSubcategories =
-              category.subCategories && category.subCategories.length > 0;
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Categories Section */}
+        <div className="p-6 border-b border-gray-100">
+          <h4 className="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-6">
+            Categories
+          </h4>
+          <div className="space-y-4">
+            <button
+              onClick={() => handleCategoryClick("")}
+              className="w-full text-left flex items-center justify-between group"
+            >
+              <span
+                className={`text-sm tracking-wide transition-colors ${filters.categoryId === "" ? "text-gray-900 font-medium" : "text-gray-500 hover:text-gray-900"}`}
+              >
+                All Collections
+              </span>
+              {filters.categoryId === "" && (
+                <Check size={14} className="text-gray-900" />
+              )}
+            </button>
 
-            return (
-              <div key={categoryId}>
-                <button
-                  onClick={() => {
-                    if (hasSubcategories) {
-                      toggleExpanded(categoryId);
-                    } else {
-                      handleCategoryClick(categoryId);
+            {categories.map((category) => {
+              const categoryId = category.id || category._id;
+              const isExpanded = expandedCategories[categoryId];
+              const hasSubcategories =
+                category.subCategories && category.subCategories.length > 0;
+              const isActive = filters.categoryId === categoryId;
+
+              return (
+                <div key={categoryId} className="space-y-3">
+                  <button
+                    onClick={() =>
+                      hasSubcategories
+                        ? toggleExpanded(categoryId)
+                        : handleCategoryClick(categoryId)
                     }
-                  }}
-                  className={`w-full text-left px-3 py-2.5 text-sm rounded-xl transition-all flex items-center justify-between group ${
-                    filters.categoryId === categoryId
-                      ? "bg-pink-50 text-pink-600 font-semibold"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-pink-500"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    {category.name}
-                  </span>
-                  {hasSubcategories ? (
-                    isExpanded ? (
-                      <ChevronDown size={14} className="text-pink-500" />
-                    ) : (
-                      <ChevronRight
-                        size={14}
-                        className="opacity-0 group-hover:opacity-100 text-pink-300 transition-opacity"
-                      />
-                    )
-                  ) : filters.categoryId === categoryId ? (
-                    <Check size={14} className="text-pink-500" />
-                  ) : (
-                    <ChevronRight
-                      size={14}
-                      className="opacity-0 group-hover:opacity-100 text-pink-300 transition-opacity"
-                    />
+                    className="w-full text-left flex items-center justify-between group"
+                  >
+                    <span
+                      className={`text-sm tracking-wide transition-colors ${isActive ? "text-gray-900 font-medium" : "text-gray-500 hover:text-gray-900"}`}
+                    >
+                      {category.name}
+                    </span>
+                    <div className="flex items-center">
+                      {isActive && !hasSubcategories && (
+                        <Check size={14} className="text-gray-900" />
+                      )}
+                      {hasSubcategories && (
+                        <ChevronRight
+                          size={14}
+                          className={`text-gray-400 transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}
+                        />
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Subcategories (if any) */}
+                  {hasSubcategories && isExpanded && (
+                    <div className="pl-4 border-l border-gray-100 space-y-3 mt-3 ml-1">
+                      {category.subCategories.map((subCategory) => {
+                        const subId = subCategory.id || subCategory._id;
+                        const isSubActive = filters.categoryId === subId;
+                        return (
+                          <button
+                            key={subId}
+                            onClick={() => handleCategoryClick(subId)}
+                            className="w-full text-left flex items-center justify-between group"
+                          >
+                            <span
+                              className={`text-xs tracking-wide transition-colors ${isSubActive ? "text-gray-900 font-medium" : "text-gray-400 hover:text-gray-900"}`}
+                            >
+                              {subCategory.name}
+                            </span>
+                            {isSubActive && (
+                              <Check size={12} className="text-gray-900" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
-                </button>
-
-                {/* Subcategories */}
-                {hasSubcategories && isExpanded && (
-                  <div className="ml-4 space-y-1 mt-1">
-                    {category.subCategories.map((subCategory) => {
-                      const subCategoryId = subCategory.id || subCategory._id;
-                      return (
-                        <button
-                          key={subCategoryId}
-                          onClick={() => handleCategoryClick(subCategoryId)}
-                          className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-all flex items-center justify-between group ${
-                            filters.categoryId === subCategoryId
-                              ? "bg-pink-100 text-pink-600 font-semibold"
-                              : "text-gray-500 hover:bg-pink-50 hover:text-pink-500"
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-pink-300 rounded-full"></span>
-                            {subCategory.name}
-                          </span>
-                          {filters.categoryId === subCategoryId && (
-                            <Check size={12} className="text-pink-500" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-      <div className="h-1 bg-gradient-to-r from-pink-300 via-purple-300 to-pink-300"></div>
 
-      {/* Price Range with feminine styling */}
-      <div className="p-5 bg-gradient-to-b from-white to-pink-50/30">
-        <h4 className="text-xs font-semibold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 uppercase tracking-wider mb-3 flex items-center gap-1">
-          <Sparkles size={12} className="text-pink-400" />
-          Price Range
-        </h4>
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <div className="relative">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-pink-400 text-xs">
+        {/* Price Range Section */}
+        <div className="p-6">
+          <h4 className="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-6">
+            Price Range
+          </h4>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-1 relative">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
                 $
               </span>
               <input
@@ -259,16 +234,14 @@ const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
                 name="minPrice"
                 value={filters.minPrice}
                 onChange={handleInputChange}
-                placeholder="0"
-                className="w-full pl-6 pr-2 py-2 text-sm border border-pink-200 rounded-xl focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 bg-white placeholder-pink-300 text-gray-700"
+                placeholder="Min"
+                className="w-full pl-4 pr-0 py-2 text-sm border-0 border-b border-gray-200 focus:ring-0 focus:border-gray-900 bg-transparent text-gray-900 transition-colors"
                 min="0"
               />
             </div>
-          </div>
-          <span className="text-pink-300 font-medium">—</span>
-          <div className="flex-1">
-            <div className="relative">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-pink-400 text-xs">
+            <span className="text-gray-300">—</span>
+            <div className="flex-1 relative">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
                 $
               </span>
               <input
@@ -276,55 +249,52 @@ const ProductsSidBar = ({ onFilterChange, activeFilters = {} }) => {
                 name="maxPrice"
                 value={filters.maxPrice}
                 onChange={handleInputChange}
-                placeholder="Any"
-                className="w-full pl-6 pr-2 py-2 text-sm border border-pink-200 rounded-xl focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 bg-white placeholder-pink-300 text-gray-700"
+                placeholder="Max"
+                className="w-full pl-4 pr-0 py-2 text-sm border-0 border-b border-gray-200 focus:ring-0 focus:border-gray-900 bg-transparent text-gray-900 transition-colors"
                 min="0"
               />
             </div>
           </div>
-        </div>
 
-        {/* Quick price suggestions */}
-        <div className="flex items-center gap-2 mt-3">
-          <button
-            onClick={() => {
-              const newFilters = { ...filters, minPrice: "0", maxPrice: "250" };
-              setFilters(newFilters);
-              onFilterChange(newFilters);
-            }}
-            className="flex-1 text-xs bg-white border border-pink-200 text-pink-500 py-1.5 rounded-xl hover:bg-pink-50 transition-colors"
-          >
-            Under $250
-          </button>
-          <button
-            onClick={() => {
-              const newFilters = {
-                ...filters,
-                minPrice: "250",
-                maxPrice: "500",
-              };
-              setFilters(newFilters);
-              onFilterChange(newFilters);
-            }}
-            className="flex-1 text-xs bg-white border border-pink-200 text-pink-500 py-1.5 rounded-xl hover:bg-pink-50 transition-colors"
-          >
-            $250 - $500
-          </button>
-          <button
-            onClick={() => {
-              const newFilters = { ...filters, minPrice: "500", maxPrice: "" };
-              setFilters(newFilters);
-              onFilterChange(newFilters);
-            }}
-            className="flex-1 text-xs bg-white border border-pink-200 text-pink-500 py-1.5 rounded-xl hover:bg-pink-50 transition-colors"
-          >
-            $500+
-          </button>
+          <div className="space-y-2">
+            {[
+              { label: "Under $100", min: "0", max: "100" },
+              { label: "$100 - $250", min: "100", max: "250" },
+              { label: "$250 & Above", min: "250", max: "" },
+            ].map((range, idx) => {
+              const isActive =
+                filters.minPrice === range.min &&
+                filters.maxPrice === range.max;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    const newFilters = {
+                      ...filters,
+                      minPrice: range.min,
+                      maxPrice: range.max,
+                    };
+                    setFilters(newFilters);
+                    onFilterChange(newFilters);
+                  }}
+                  className={`w-full text-left flex items-center gap-3 group`}
+                >
+                  <div
+                    className={`w-3 h-3 border rounded-sm transition-colors ${isActive ? "bg-primary border-primary" : "border-gray-300 group-hover:border-gray-900"}`}
+                  >
+                    {isActive && <Check size={10} className="text-white" />}
+                  </div>
+                  <span
+                    className={`text-xs tracking-wide ${isActive ? "text-gray-900 font-medium" : "text-gray-500 group-hover:text-gray-900"}`}
+                  >
+                    {range.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
-
-      {/* Decorative element */}
-      <div className="h-1 bg-gradient-to-r from-pink-300 via-purple-300 to-pink-300"></div>
     </div>
   );
 };

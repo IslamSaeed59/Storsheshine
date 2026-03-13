@@ -1,25 +1,64 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
-  createCategory,
+  getCategoryById,
+  updateCategory,
   getCategories,
   uploadCategoryImage,
 } from "../../../Services/api";
 import { ArrowLeft, ImagePlus, X, Loader2, Save } from "lucide-react";
 
-const CreateCategory = () => {
+const UpdateCategory = () => {
+  const { id } = useParams();
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm();
+  
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [originalImage, setOriginalImage] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [categoryRes, allCategoriesRes] = await Promise.all([
+           getCategoryById(id),
+           getCategories()
+        ]);
+
+        const currentCategory = categoryRes.data;
+        const allCategories = allCategoriesRes.data || [];
+        
+        // Prevent setting itself as its parent
+        setCategories(allCategories.filter(cat => cat._id !== id));
+        
+        // Set form values
+        setValue("name", currentCategory.name);
+        setValue("parentId", currentCategory.parentId || "");
+        
+        if (currentCategory.image) {
+            setImagePreview(currentCategory.image);
+            setOriginalImage(currentCategory.image);
+        }
+
+      } catch (error) {
+        toast.error("Failed to load category data");
+        navigate("/admin/category");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id, navigate, setValue]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -41,10 +80,10 @@ const CreateCategory = () => {
 
   const handleRemoveImage = () => {
     setImageFile(null);
-    if (imagePreview) {
+    if (imagePreview && imagePreview !== originalImage) {
        URL.revokeObjectURL(imagePreview);
-       setImagePreview(null);
     }
+    setImagePreview(null);
   };
 
   const handleImageUpload = async (categoryName) => {
@@ -66,26 +105,18 @@ const CreateCategory = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await getCategories();
-        setCategories(response.data || []);
-      } catch (error) {
-        toast.error("Failed to load categories");
-      }
-    };
-    fetchCategories();
-  }, []);
-
   const onSubmit = async (data) => {
-    if (!imageFile) {
-      toast.error("Please upload a category image");
-      return;
-    }
+    let imageUrl = originalImage;
 
-    const imageUrl = await handleImageUpload(data.name);
-    if (!imageUrl) return;
+    // If a new image was uploaded
+    if (imageFile) {
+        const uploadedUrl = await handleImageUpload(data.name);
+        if (!uploadedUrl) return; // Stop if upload failed
+        imageUrl = uploadedUrl;
+    } else if (!imagePreview) {
+       // If image was removed completely
+       imageUrl = null;
+    }
 
     try {
       const payload = {
@@ -93,13 +124,23 @@ const CreateCategory = () => {
         parentId: data.parentId || null,
         image: imageUrl,
       };
-      await createCategory(payload);
-      toast.success("Category created successfully");
+      
+      await updateCategory(id, payload);
+      toast.success("Category updated successfully");
       navigate("/admin/category");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to create category");
+      toast.error(error.response?.data?.message || "Failed to update category");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+         <Loader2 size={32} className="animate-spin text-gray-400 mb-4" />
+         <p className="text-sm font-medium text-gray-500 animate-pulse">Loading category info...</p>
+      </div>
+    );
+  }
 
   const inputClass = "w-full px-4 py-2.5 bg-gray-50 border border-transparent rounded-lg text-sm transition-all focus:bg-white focus:border-gray-200 focus:ring-4 focus:ring-primary/5 outline-none placeholder:text-gray-400";
   const labelClass = "block text-[13px] font-medium text-gray-700 mb-1.5";
@@ -118,9 +159,9 @@ const CreateCategory = () => {
         </button>
         <div>
           <h2 className="text-2xl font-serif font-medium text-gray-900">
-            Create Category
+            Edit Category
           </h2>
-          <p className="text-sm text-gray-500 mt-1">Organize your products into new categories.</p>
+          <p className="text-sm text-gray-500 mt-1">Update category details and media.</p>
         </div>
       </div>
 
@@ -134,7 +175,6 @@ const CreateCategory = () => {
                type="text"
                {...register("name", { required: "Name is required" })}
                className={`${inputClass} ${errors.name ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-500/20" : ""}`}
-               placeholder="e.g. Dresses, Accessories"
              />
              {errors.name && <p className={errorClass}>{errors.name.message}</p>}
            </div>
@@ -152,7 +192,7 @@ const CreateCategory = () => {
                  </option>
                ))}
              </select>
-             <p className="text-[10px] text-gray-400 mt-1.5">Leave 'None' to create a primary category.</p>
+             <p className="text-[10px] text-gray-400 mt-1.5">Leave 'None' to make it a primary category.</p>
            </div>
         </div>
 
@@ -207,7 +247,7 @@ const CreateCategory = () => {
                {(isSubmitting || uploading) ? (
                  <><Loader2 size={16} className="animate-spin" /> {uploading ? "Uploading..." : "Saving..."}</>
                ) : (
-                 <><Save size={16} /> Create Category</>
+                 <><Save size={16} /> Save Changes</>
                )}
             </button>
         </div>
@@ -217,4 +257,4 @@ const CreateCategory = () => {
   );
 };
 
-export default CreateCategory;
+export default UpdateCategory;

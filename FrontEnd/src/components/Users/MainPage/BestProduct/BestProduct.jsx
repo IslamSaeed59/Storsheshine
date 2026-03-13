@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Minus, Eye } from "lucide-react";
+import { Plus, Minus, ArrowRight } from "lucide-react";
 import { getProducts } from "../../../../Services/api";
 import { useNavigate } from "react-router-dom";
 
@@ -13,10 +13,7 @@ const BestProduct = () => {
     const fetchFeatured = async () => {
       try {
         const response = await getProducts();
-        const featured = (response.data.products || []).find(
-          (item) => item.isFeatured,
-        );
-        console.log(" Featured Product:", featured);
+        const featured = (response.data.products || []).find((item) => item.isFeatured);
         setProduct(featured);
       } catch (error) {
         console.error("Error fetching featured product:", error);
@@ -25,147 +22,95 @@ const BestProduct = () => {
     fetchFeatured();
   }, []);
 
-  const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
-  const increaseQuantity = () => setQuantity((prev) => prev + 1);
-
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
-    },
-  };
-
-  const headerVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  };
-
   if (!product) return null;
 
   return (
-    <div className="bg-white py-16 sm:py-24">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-background py-20 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          variants={headerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-center mb-12"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="bg-white grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-12 rounded-sm border border-gray-100"
         >
-          <div className="inline-flex items-center gap-2 bg-[#cc1f69]/10 px-4 py-2 rounded-full mb-4">
-            <div className="w-2 h-2 bg-[#cc1f69] rounded-full animate-pulse"></div>
-            <span className="text-sm font-semibold text-[#cc1f69]">
-              LIMITED TIME OFFER
-            </span>
-          </div>
-
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-[#cc1f69] to-[#a91853] bg-clip-text text-transparent">
-              Deal of the Day
-            </span>
-          </h2>
-
-          <p className="mt-5 max-w-2xl mx-auto text-lg text-gray-600">
-            Don't miss out on this exclusive offer, available for a limited time
-            only.
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={sectionVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-2xl"
-        >
-          <div className="relative h-80 md:h-full">
+          {/* Image Side */}
+          <div className="relative aspect-square lg:aspect-auto lg:h-[600px] bg-gray-50 overflow-hidden flex items-center justify-center p-12">
+            <div className="absolute top-6 left-6 z-10">
+              <span className="bg-primary text-white text-xs font-bold tracking-widest uppercase py-2 px-4">
+                Deal of the Day
+              </span>
+            </div>
             <img
-              src={
-                product.images && product.images.length > 0
-                  ? product.images[0]
-                  : "/placeholder.png"
-              }
+              src={product.images && product.images.length > 0 ? product.images[0] : "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=2000&auto=format&fit=crop"}
               alt={product.name}
-              className="w-full h-full object-center  object-contain transition-transform duration-300 hover:scale-105"
+              className="w-full h-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-700"
             />
           </div>
 
-          <div className="p-8 sm:p-12 flex flex-col justify-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 tracking-tight">
+          {/* Content Side */}
+          <div className="p-8 sm:p-12 lg:p-16 flex flex-col justify-center">
+            <div className="mb-4">
+              <span className="text-xs font-semibold tracking-widest text-gray-400 uppercase">
+                Limited Edition
+              </span>
+            </div>
+            
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-gray-900 leading-tight mb-4">
               {product.name}
             </h2>
-            <div className="mt-3 flex items-center gap-3">
+            
+            <div className="flex items-baseline gap-4 mb-6">
               {product.discount > 0 ? (
                 <>
-                  <p
-                    className="text-3xl font-semibold"
-                    style={{ color: "#cc1f69" }}
-                  >
-                    $
-                    {(
-                      parseFloat(product.basePrice) *
-                      (1 - product.discount / 100)
-                    ).toFixed(2)}
-                  </p>
-                  <p className="text-xl text-gray-500 line-through font-medium">
+                  <span className="text-2xl lg:text-3xl font-light text-primary">
+                    ${(parseFloat(product.basePrice) * (1 - product.discount / 100)).toFixed(2)}
+                  </span>
+                  <span className="text-lg text-gray-400 line-through">
                     ${parseFloat(product.basePrice).toFixed(2)}
-                  </p>
+                  </span>
                 </>
               ) : (
-                <p
-                  className="text-3xl font-semibold"
-                  style={{ color: "#cc1f69" }}
-                >
+                <span className="text-2xl lg:text-3xl font-light text-gray-900">
                   ${parseFloat(product.basePrice).toFixed(2)}
-                </p>
+                </span>
               )}
             </div>
-            <p className="text-gray-600 mt-5 text-base leading-relaxed">
-              {product.description}
+            
+            <p className="text-gray-600 font-light leading-relaxed mb-10">
+              {product.description || "Experience the perfect blend of style and comfort. Handcrafted from premium materials for the ultimate luxurious feel. Make it yours today."}
             </p>
 
-            <div className="mt-8 flex items-center gap-6">
-              <span className="text-sm font-medium text-gray-700">
-                Quantity:
-              </span>
-              <div className="flex items-center gap-3">
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 mt-auto">
+              <div className="flex items-center border border-gray-200 w-full sm:w-auto h-14">
                 <button
-                  onClick={decreaseQuantity}
-                  disabled={quantity <= 1}
-                  className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Decrease quantity"
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                  className="px-5 h-full text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
                 >
-                  <Minus size={18} />
+                  <Minus size={16} />
                 </button>
-                <span className="text-xl font-bold w-8 text-center">
-                  {quantity}
-                </span>
+                <span className="w-12 text-center text-sm font-medium">{quantity}</span>
                 <button
-                  onClick={increaseQuantity}
-                  className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
-                  aria-label="Increase quantity"
+                  onClick={() => setQuantity((prev) => prev + 1)}
+                  className="px-5 h-full text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
                 >
-                  <Plus size={18} />
+                  <Plus size={16} />
                 </button>
               </div>
-            </div>
 
-            <button
-              onClick={() => navigate(`/Product/${product._id || product.id}`)}
-              className="w-full mt-10 bg-[#cc1f69] text-white font-bold py-4 rounded-xl text-lg flex items-center justify-center gap-3
-                       hover:bg-[#a91853] transition-all duration-300 transform hover:scale-105 
-                       focus:outline-none focus:ring-2 focus:ring-[#cc1f69] focus:ring-opacity-75 shadow-md hover:shadow-lg"
-              aria-label="View product"
-            >
-              <Eye size={22} />
-              View Product
-            </button>
+              <button
+                onClick={() => navigate(`/Product/${product._id || product.id}`)}
+                className="w-full sm:flex-1 h-14 bg-gray-900 text-white font-medium tracking-wide uppercase text-sm hover:bg-primary transition-colors flex items-center justify-center gap-2 group"
+              >
+                Discover More
+                <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
-    </div>
+    </section>
   );
 };
 

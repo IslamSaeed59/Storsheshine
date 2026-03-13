@@ -9,7 +9,7 @@ import {
   uploadVariantImage,
   uploadsizeChartImage,
 } from "../../../Services/api";
-import { FiUpload, FiX } from "react-icons/fi";
+import { UploadCloud, X, ArrowLeft, Loader2, ImagePlus } from "lucide-react";
 
 const CreatProduct = () => {
   const {
@@ -26,32 +26,24 @@ const CreatProduct = () => {
   const [uploading, setUploading] = useState(false);
   const [variantImageFile, setVariantImageFile] = useState(null);
   const [variantImagePreview, setVariantImagePreview] = useState(null);
-
   const [sizeChartImageFile, setSizeChartImageFile] = useState(null);
   const [sizeChartImagePreview, setSizeChartImagePreview] = useState(null);
-
   const [isVariantPriceEdited, setIsVariantPriceEdited] = useState(false);
 
-  const size = ["Xs", "S", "M", "L", "XL", "XXL", "NoSize"];
-
-  // ✅ Watch categoryId to get category name
+  const sizeOptions = ["Xs", "S", "M", "L", "XL", "XXL", "NoSize"];
   const selectedCategoryId = watch("categoryId");
   const basePrice = watch("basePrice");
 
   useEffect(() => {
-    // Only update if the variant price hasn't been manually edited
     if (!isVariantPriceEdited) {
       setValue("price", basePrice, { shouldValidate: true });
     }
   }, [basePrice, isVariantPriceEdited, setValue]);
 
-  // ✅ Get selected category name
   const getSelectedCategoryName = () => {
     const selected = categories.find((cat) => cat._id === selectedCategoryId);
     if (!selected) return "uncategorized";
-
-    const parent = categories.find((c) => c._id === selected.parentId); // Ensure parentId check uses _id
-    // Use parent name if exists, otherwise use category name
+    const parent = categories.find((c) => c._id === selected.parentId);
     return parent ? parent.name : selected.name;
   };
 
@@ -61,14 +53,12 @@ const CreatProduct = () => {
         const response = await getCategories();
         setCategories(response.data || []);
       } catch (error) {
-        console.error("Failed to fetch categories", error);
         toast.error("Failed to load categories");
       }
     };
     fetchCategories();
   }, []);
 
-  // ✅ Handle image selection
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -86,12 +76,10 @@ const CreatProduct = () => {
         toast.error(`Skipped ${file.name}: Not an image file`);
         return;
       }
-
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`Skipped ${file.name}: Size must be less than 5MB`);
         return;
       }
-
       newFiles.push(file);
       newPreviews.push(URL.createObjectURL(file));
     });
@@ -100,7 +88,6 @@ const CreatProduct = () => {
     setImagePreviews((prev) => [...prev, ...newPreviews]);
   };
 
-  // ✅ Remove selected image
   const handleRemoveImage = (index) => {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => {
@@ -109,69 +96,32 @@ const CreatProduct = () => {
     });
   };
 
-  // ✅ Handle variant image selection
-  const handleVariantImageChange = (e) => {
+  const handleSingleImageChange = (e, setFile, setPreview) => {
     const file = e.target.files[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image size must be less than 5MB");
       return;
     }
-
-    setVariantImageFile(file);
-    setVariantImagePreview(URL.createObjectURL(file));
+    setFile(file);
+    setPreview(URL.createObjectURL(file));
   };
 
-  // ✅ Remove selected variant image
-  const handleRemoveVariantImage = () => {
-    setVariantImageFile(null);
-    if (variantImagePreview) {
-      URL.revokeObjectURL(variantImagePreview);
-      setVariantImagePreview(null);
+  const removeSingleImage = (setFile, preview, setPreview) => {
+    setFile(null);
+    if (preview) {
+      URL.revokeObjectURL(preview);
+      setPreview(null);
     }
   };
 
-  // ✅ Handle size chart image selection
-  const handleSizeChartImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size must be less than 5MB");
-      return;
-    }
-
-    setSizeChartImageFile(file);
-    setSizeChartImagePreview(URL.createObjectURL(file));
-  };
-
-  // ✅ Remove selected size chart image
-  const handleRemoveSizeChartImage = () => {
-    setSizeChartImageFile(null);
-    if (sizeChartImagePreview) {
-      URL.revokeObjectURL(sizeChartImagePreview);
-      setSizeChartImagePreview(null);
-    }
-  };
-
-  // ✅ Upload image with category name
   const handleImageUpload = async () => {
     if (imageFiles.length === 0) return null;
-
     const categoryName = getSelectedCategoryName();
-    console.log("📤 Uploading to category:", categoryName); // Debug
-
     try {
       setUploading(true);
       const uploadPromises = imageFiles.map((file) => {
@@ -180,12 +130,8 @@ const CreatProduct = () => {
         formData.append("productImage", file);
         return uploadImage(formData).then((res) => res.data.imageUrl);
       });
-
-      const imageUrls = await Promise.all(uploadPromises);
-      console.log("✅ Upload response:", imageUrls); // Debug
-      return imageUrls;
+      return await Promise.all(uploadPromises);
     } catch (error) {
-      console.error("❌ Upload error:", error);
       toast.error("Image upload failed");
       return null;
     } finally {
@@ -199,8 +145,6 @@ const CreatProduct = () => {
         toast.error("Please upload at least one product image");
         return;
       }
-
-      // ✅ Validate category selected before upload
       if (!data.categoryId) {
         toast.error("Please select a category first");
         return;
@@ -209,7 +153,6 @@ const CreatProduct = () => {
       const imageUrls = await handleImageUpload();
       if (!imageUrls) return;
 
-      // ✅ Upload variant image if exists
       let variantImageUrl = "";
       if (variantImageFile) {
         setUploading(true);
@@ -219,13 +162,11 @@ const CreatProduct = () => {
           const res = await uploadVariantImage(formData);
           variantImageUrl = res.data.imageUrl;
         } catch (error) {
-          console.error("Variant image upload failed", error);
           toast.error("Failed to upload variant image");
           return;
         }
       }
 
-      // ✅ Upload size chart image if exists
       let sizeChartUrl = "";
       if (sizeChartImageFile) {
         setUploading(true);
@@ -235,7 +176,6 @@ const CreatProduct = () => {
           const res = await uploadsizeChartImage(formData);
           sizeChartUrl = res.data.imageUrl;
         } catch (error) {
-          console.error("Size chart upload failed", error);
           toast.error("Failed to upload size chart image");
           return;
         }
@@ -258,432 +198,308 @@ const CreatProduct = () => {
       toast.success("Product created successfully");
       navigate("/admin/products");
     } catch (error) {
-      console.error(error);
       toast.error(error.response?.data?.message || "Failed to create product");
     } finally {
       setUploading(false);
     }
   };
 
+  const inputClass = "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm transition-all focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-primary/5 outline-none placeholder:text-gray-400";
+  const labelClass = "block text-[13px] font-medium text-gray-700 mb-1.5";
+  const errorClass = "text-red-500 text-[11px] font-medium mt-1";
+
   return (
-    <div className="max-w-4xl mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Create New Product
-      </h2>
+    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <button
+          onClick={() => navigate("/admin/products")}
+          className="p-2 text-gray-400 hover:text-gray-900 hover:bg-white rounded-lg transition-colors shadow-sm bg-gray-50 border border-gray-100"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div>
+          <h2 className="text-2xl font-serif font-medium text-gray-900">
+            Create New Product
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">Add a new item to your store's inventory.</p>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Product Info Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Name */}
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Name
-            </label>
-            <input
-              type="text"
-              {...register("name", { required: "Name is required" })}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                errors.name ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter product name"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
-            )}
-          </div>
-
-          {/* Description */}
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              {...register("description", {})}
-              rows="4"
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                errors.description ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter product description"
-            />
-            {errors.description && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
-
-          {/* ✅ Category - Moved up so user selects it first */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <select
-              {...register("categoryId", { required: "Category is required" })}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                errors.categoryId ? "border-red-500" : "border-gray-300"
-              }`}
-            >
-              <option value="">Select Category</option>
-              {categories.map((cat) => {
-                const parent = categories.find((c) => c._id === cat.parentId);
-                return (
-                  <option key={cat._id} value={cat._id}>
-                    {parent ? `${parent.name} > ${cat.name}` : cat.name}
-                  </option>
-                );
-              })}
-            </select>
-            {errors.categoryId && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.categoryId.message}
-              </p>
-            )}
-          </div>
-
-          {/* Base Price */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Base Price
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              {...register("basePrice", {
-                required: "Base Price is required",
-                min: 0,
-              })}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                errors.basePrice ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="0.00"
-            />
-            {errors.basePrice && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.basePrice.message}
-              </p>
-            )}
-          </div>
-
-          {/* Brand */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Brand
-            </label>
-            <input
-              type="text"
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                errors.brand ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter brand name"
-            />
-            {errors.brand && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.brand.message}
-              </p>
-            )}
-          </div>
-
-          {/* Discount */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Discount (%)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              {...register("discount", {
-                min: { value: 0, message: "Discount must be positive" },
-                max: { value: 100, message: "Discount cannot exceed 100%" },
-              })}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                errors.discount ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="0.00"
-            />
-            {errors.discount && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.discount.message}
-              </p>
-            )}
-          </div>
-        </div>
-        {/* ✅ Image Upload Section */}
-        <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Product Images (Max 2)
-          </label>
-
-          {/* ✅ Show category warning if not selected */}
-          {!selectedCategoryId && (
-            <p className="text-yellow-500 text-xs mb-2">
-              ⚠️ Please select a category before uploading images
-            </p>
-          )}
-
-          {/* ✅ Show selected category folder */}
-          {selectedCategoryId && (
-            <p className="text-green-600 text-xs mb-2">
-              📁 Images will be saved in:{" "}
-              <span className="font-semibold">
-                /uploads/
-                {getSelectedCategoryName().toLowerCase().replace(/\s+/g, "-")}/
-              </span>
-            </p>
-          )}
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {imagePreviews.map((src, index) => (
-              <div
-                key={index}
-                className="relative h-32 rounded-lg overflow-hidden border border-gray-200 group"
-              >
-                <img
-                  src={src}
-                  alt={`Preview ${index}`}
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(index)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <FiX className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-
-            {imagePreviews.length < 2 && (
-              <label
-                className={`flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg transition-all ${
-                  selectedCategoryId
-                    ? "border-gray-300 cursor-pointer hover:border-[#cc1f69] hover:bg-pink-50"
-                    : "border-gray-200 cursor-not-allowed bg-gray-50 opacity-60"
-                }`}
-              >
-                <div className="flex flex-col items-center justify-center">
-                  <FiUpload className="w-8 h-8 text-gray-400 mb-2" />
-                  <span className="text-xs text-gray-500 text-center px-2">
-                    Upload Image
-                  </span>
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  multiple
-                  disabled={!selectedCategoryId} // ✅ Disable if no category selected
-                  onChange={handleImageChange}
-                />
-              </label>
-            )}
-          </div>
-
-          {uploading && (
-            <div className="mt-2 text-center">
-              <p className="text-[#cc1f69] text-sm font-semibold animate-pulse">
-                Uploading images...
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Variant Details */}
-        <div className="border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Initial Variant Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Size */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Size
-              </label>
-              <select
-                {...register("size", { required: "Size is required" })}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                  errors.size ? "border-red-500" : "border-gray-300"
-                }`}
-              >
-                <option value="">Select Size</option>
-                {size.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              {errors.size && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.size.message}
-                </p>
-              )}
-            </div>
-
-            {/* Color */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Color
-              </label>
-              <input
-                type="text"
-                {...register("color", { required: "Color is required" })}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                  errors.color ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="e.g. Red, Blue"
-              />
-              {errors.color && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.color.message}
-                </p>
-              )}
-            </div>
-
-            {/* Variant Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Variant Price
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                {...register("price", {
-                  required: "Price is required",
-                  min: 0,
-                })}
-                onInput={() => setIsVariantPriceEdited(true)}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                  errors.price ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="0.00"
-              />
-              {errors.price && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.price.message}
-                </p>
-              )}
-            </div>
-
-            {/* Stock */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Stock Quantity
-              </label>
-              <input
-                type="number"
-                {...register("stock", {
-                  required: "Stock is required",
-                  min: 0,
-                })}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#cc1f69] focus:border-transparent outline-none transition-all ${
-                  errors.stock ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="0"
-              />
-              {errors.stock && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.stock.message}
-                </p>
-              )}
-            </div>
-
-            {/* Variant Image */}
-            <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Variant Image
-              </label>
-              {!variantImagePreview ? (
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <FiUpload className="w-8 h-8 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">
-                      Click to upload variant image
-                    </p>
-                  </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Main Info Column */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Box 1: Basic Info */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-base font-semibold text-gray-900 mb-5">Basic Information</h3>
+              <div className="space-y-5">
+                <div>
+                  <label className={labelClass}>Product Name</label>
                   <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleVariantImageChange}
+                    type="text"
+                    {...register("name", { required: "Name is required" })}
+                    className={`${inputClass} ${errors.name ? "border-red-300 bg-red-50" : ""}`}
+                    placeholder="Enter product name"
                   />
-                </label>
-              ) : (
-                <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-200 group">
-                  <img
-                    src={variantImagePreview}
-                    alt="Variant Preview"
-                    className="w-full h-full object-cover"
+                  {errors.name && <p className={errorClass}>{errors.name.message}</p>}
+                </div>
+                
+                <div>
+                  <label className={labelClass}>Description</label>
+                  <textarea
+                    {...register("description")}
+                    rows="4"
+                    className={`${inputClass} resize-none custom-scrollbar`}
+                    placeholder="Describe this product..."
                   />
-                  <button
-                    type="button"
-                    onClick={handleRemoveVariantImage}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <FiX className="w-4 h-4" />
-                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Category</label>
+                    <select
+                      {...register("categoryId", { required: "Category is required" })}
+                      className={`${inputClass} appearance-none cursor-pointer ${errors.categoryId ? "border-red-300 bg-red-50" : ""}`}
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((cat) => {
+                        const parent = categories.find((c) => c._id === cat.parentId);
+                        return (
+                          <option key={cat._id} value={cat._id}>
+                            {parent ? `${parent.name} > ${cat.name}` : cat.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {errors.categoryId && <p className={errorClass}>{errors.categoryId.message}</p>}
+                  </div>
+                  <div>
+                    <label className={labelClass}>Brand</label>
+                    <input
+                      type="text"
+                      {...register("brand")}
+                      className={inputClass}
+                      placeholder="e.g. Zara, Nike"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Box 2: Media */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+               <div className="flex items-center justify-between mb-5">
+                <h3 className="text-base font-semibold text-gray-900">Product Images</h3>
+                <span className="text-xs text-gray-500 font-medium bg-gray-100 px-2.5 py-1 rounded-full">{imageFiles.length} / 4 uploaded</span>
+               </div>
+               
+              {!selectedCategoryId && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-xs flex items-center gap-2">
+                  <span className="text-base">⚠️</span> Please select a category above before uploading images.
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-        {/* ✅ Size Chart Image Upload Section */}
-        <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Size Chart Image (Optional)
-          </label>
-          {!sizeChartImagePreview ? (
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <FiUpload className="w-8 h-8 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500">
-                  Click to upload size chart
-                </p>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleSizeChartImageChange}
-              />
-            </label>
-          ) : (
-            <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-200 group">
-              <img
-                src={sizeChartImagePreview}
-                alt="Size Chart Preview"
-                className="w-full h-full object-cover"
-              />
-              <button
-                type="button"
-                onClick={handleRemoveSizeChartImage}
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <FiX className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-4 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate("/admin/products")}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || uploading}
-            className="bg-[#cc1f69] hover:bg-[#a91853] text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69] focus:ring-offset-2 transform transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {uploading
-              ? "Uploading Image..."
-              : isSubmitting
-                ? "Creating..."
-                : "Create Product"}
-          </button>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {imagePreviews.map((src, index) => (
+                  <div key={index} className="relative aspect-[3/4] rounded-xl overflow-hidden border border-gray-100 group shadow-sm">
+                    <img src={src} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-2 right-2 bg-white/90 text-red-500 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50"
+                    >
+                      <X size={14} strokeWidth={2.5}/>
+                    </button>
+                  </div>
+                ))}
+
+                {imagePreviews.length < 4 && (
+                  <label className={`aspect-[3/4] flex flex-col items-center justify-center border-2 border-dashed rounded-xl transition-all ${
+                    selectedCategoryId ? "border-gray-300 cursor-pointer hover:border-primary/50 hover:bg-primary/5" : "border-gray-200 cursor-not-allowed bg-gray-50 opacity-50"
+                  }`}>
+                    <ImagePlus size={24} className="text-gray-400 mb-2" strokeWidth={1.5} />
+                    <span className="text-xs font-medium text-gray-500">Add Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      multiple
+                      disabled={!selectedCategoryId}
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+
+            {/* Box 3: Initial Variant */}
+             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-base font-semibold text-gray-900 mb-5">Initial Variant Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                
+                <div>
+                  <label className={labelClass}>Color</label>
+                  <input
+                    type="text"
+                    {...register("color", { required: "Color is required" })}
+                    className={`${inputClass} ${errors.color ? "border-red-300 bg-red-50" : ""}`}
+                    placeholder="e.g. Red, Blue, #FFFFFF"
+                  />
+                  {errors.color && <p className={errorClass}>{errors.color.message}</p>}
+                </div>
+
+                <div>
+                  <label className={labelClass}>Size</label>
+                  <select
+                    {...register("size", { required: "Size is required" })}
+                    className={`${inputClass} appearance-none cursor-pointer ${errors.size ? "border-red-300 bg-red-50" : ""}`}
+                  >
+                    <option value="">Select Size</option>
+                    {sizeOptions.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  {errors.size && <p className={errorClass}>{errors.size.message}</p>}
+                </div>
+
+                <div>
+                  <label className={labelClass}>Stock Quantity</label>
+                  <input
+                    type="number"
+                    {...register("stock", { required: "Stock is required", min: 0 })}
+                    className={`${inputClass} ${errors.stock ? "border-red-300 bg-red-50" : ""}`}
+                    placeholder="0"
+                  />
+                  {errors.stock && <p className={errorClass}>{errors.stock.message}</p>}
+                </div>
+
+                <div>
+                  <label className={labelClass}>Variant Specific Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    {...register("price", { required: "Price is required", min: 0 })}
+                    onInput={() => setIsVariantPriceEdited(true)}
+                    className={`${inputClass} ${errors.price ? "border-red-300 bg-red-50" : ""}`}
+                    placeholder="0.00"
+                  />
+                  {errors.price && <p className={errorClass}>{errors.price.message}</p>}
+                </div>
+
+                 {/* Variant & Size chart images side by side */}
+                 <div className="sm:col-span-2 grid grid-cols-2 gap-5 mt-2">
+                    <div>
+                      <label className={labelClass}>Variant Image (Optional)</label>
+                      {!variantImagePreview ? (
+                        <label className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                          <UploadCloud size={20} className="text-gray-400 mb-1" strokeWidth={1.5} />
+                          <span className="text-[11px] font-medium text-gray-500">Upload Variant</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleSingleImageChange(e, setVariantImageFile, setVariantImagePreview)} />
+                        </label>
+                      ) : (
+                        <div className="relative w-24 h-32 rounded-lg overflow-hidden border border-gray-200 group">
+                          <img src={variantImagePreview} alt="Variant" className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => removeSingleImage(setVariantImageFile, variantImagePreview, setVariantImagePreview)} className="absolute top-1 right-1 bg-white text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 shadow">
+                            <X size={12} strokeWidth={3} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className={labelClass}>Size Chart (Optional)</label>
+                      {!sizeChartImagePreview ? (
+                        <label className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                          <UploadCloud size={20} className="text-gray-400 mb-1" strokeWidth={1.5} />
+                          <span className="text-[11px] font-medium text-gray-500">Upload Chart</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleSingleImageChange(e, setSizeChartImageFile, setSizeChartImagePreview)} />
+                        </label>
+                      ) : (
+                        <div className="relative w-24 h-32 rounded-lg overflow-hidden border border-gray-200 group">
+                          <img src={sizeChartImagePreview} alt="Size Chart" className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => removeSingleImage(setSizeChartImageFile, sizeChartImagePreview, setSizeChartImagePreview)} className="absolute top-1 right-1 bg-white text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 shadow">
+                            <X size={12} strokeWidth={3} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                 </div>
+
+              </div>
+            </div>
+            
+          </div>
+
+          {/* Right Sidebar Column */}
+          <div className="space-y-6">
+            
+            {/* Box 4: Pricing */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+               <h3 className="text-base font-semibold text-gray-900 mb-5">Pricing</h3>
+               <div className="space-y-5">
+                <div>
+                  <label className={labelClass}>Base Price (EGP)</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">£</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      {...register("basePrice", { required: "Base Price is required", min: 0 })}
+                      className={`${inputClass} pl-8 ${errors.basePrice ? "border-red-300 bg-red-50" : ""}`}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  {errors.basePrice && <p className={errorClass}>{errors.basePrice.message}</p>}
+                </div>
+
+                <div>
+                  <label className={labelClass}>Discount Percentage (%)</label>
+                  <div className="relative">
+                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">%</span>
+                     <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        {...register("discount", {
+                          min: { value: 0, message: "Must be positive" },
+                          max: { value: 100, message: "Cannot exceed 100%" },
+                        })}
+                        className={`${inputClass} pr-8 ${errors.discount ? "border-red-300 bg-red-50" : ""}`}
+                        placeholder="0.00"
+                      />
+                  </div>
+                  {errors.discount && <p className={errorClass}>{errors.discount.message}</p>}
+                </div>
+               </div>
+            </div>
+
+            {/* Submit Action Box */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+              <button
+                type="submit"
+                disabled={isSubmitting || uploading}
+                className="w-full py-3 bg-gray-900 text-white rounded-xl text-sm font-semibold tracking-wide hover:bg-primary transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {(isSubmitting || uploading) ? (
+                  <><Loader2 size={16} className="animate-spin" /> {uploading ? "Uploading media..." : "Saving..."}</>
+                ) : (
+                  "Create Product"
+                )}
+              </button>
+               <button
+                  type="button"
+                  onClick={() => navigate("/admin/products")}
+                  className="w-full py-3 bg-white text-gray-600 rounded-xl text-sm font-semibold tracking-wide border border-gray-200 hover:bg-gray-50 transition-colors"
+                >
+                  Discard
+                </button>
+            </div>
+
+          </div>
         </div>
       </form>
     </div>

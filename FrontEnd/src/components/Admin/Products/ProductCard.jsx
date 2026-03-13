@@ -248,7 +248,7 @@ const ProductCard = () => {
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <div className="relative">
           <div className="w-16 h-16 border-4 border-gray-200 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-[#cc1f69] rounded-full border-t-transparent animate-spin"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-gray-900 rounded-full border-t-transparent animate-spin"></div>
         </div>
         <p className="text-sm text-gray-500 animate-pulse">
           Loading product details...
@@ -271,7 +271,7 @@ const ProductCard = () => {
         </p>
         <button
           onClick={() => navigate("/admin/products")}
-          className="flex items-center gap-2 text-[#cc1f69] hover:text-[#a91853] transition-colors group"
+          className="flex items-center gap-2 text-gray-900 hover:text-[#a91853] transition-colors group"
         >
           <ArrowLeft
             size={18}
@@ -296,7 +296,7 @@ const ProductCard = () => {
         <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <Package size={20} className="text-[#cc1f69]" />
+              <Package size={20} className="text-gray-900" />
               Product Details
             </h3>
             <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -347,7 +347,7 @@ const ProductCard = () => {
                       <button
                         key={idx}
                         onClick={() => setSelectedMainImage(img)}
-                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedMainImage === img ? "border-[#cc1f69] ring-2 ring-[#cc1f69]/20" : "border-gray-200 hover:border-gray-300"}`}
+                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedMainImage === img ? "border-gray-900 ring-2 ring-[#111827]/20" : "border-gray-200 hover:border-gray-300"}`}
                       >
                         <img
                           src={img}
@@ -374,9 +374,9 @@ const ProductCard = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1 bg-gradient-to-br from-blue-50 to-white p-4 rounded-lg border border-blue-100">
+                <div className="space-y-1 bg-gradient-to-br from-zinc-50 to-white p-4 rounded-lg border border-zinc-100">
                   <p className="text-sm font-medium text-gray-500">Category</p>
-                  <div className="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm border border-blue-200 font-medium">
+                  <div className="inline-flex items-center px-3 py-1.5 bg-zinc-100 text-black rounded-full text-sm border border-zinc-200 font-medium">
                     {product.Category?.name || "Uncategorized"}
                   </div>
                 </div>
@@ -417,7 +417,7 @@ const ProductCard = () => {
         <div className="border-b border-gray-100 bg-gray-50/50 px-4 py-4 md:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <Layers size={20} className="text-[#cc1f69]" />
+              <Layers size={20} className="text-gray-900" />
               Product Variants
             </h3>
             <button
@@ -425,7 +425,7 @@ const ProductCard = () => {
               className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 w-full sm:w-auto ${
                 showVariantForm
                   ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  : "bg-[#cc1f69] text-white hover:bg-[#a91853] shadow-sm hover:shadow"
+                  : "bg-gray-900 text-white hover:bg-[#a91853] shadow-sm hover:shadow"
               }`}
             >
               {showVariantForm ? <X size={18} /> : <Plus size={18} />}
@@ -457,7 +457,7 @@ const ProductCard = () => {
                       value={newVariant.size}
                       onChange={handleVariantChange}
                       required
-                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-gray-900 transition-all text-sm"
                     >
                       <option value="">Select Size</option>
                       {size.map((s) => (
@@ -481,7 +481,7 @@ const ProductCard = () => {
                       value={newVariant.color}
                       onChange={handleVariantChange}
                       required
-                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-gray-900 transition-all text-sm"
                       placeholder="e.g., Red, Blue, Green"
                     />
                   </div>
@@ -501,7 +501,7 @@ const ProductCard = () => {
                         value={newVariant.price}
                         onChange={handleVariantChange}
                         required
-                        className="w-full pl-7 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
+                        className="w-full pl-7 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-gray-900 transition-all text-sm"
                         placeholder="0.00"
                       />
                     </div>
@@ -517,7 +517,7 @@ const ProductCard = () => {
                       value={newVariant.stock}
                       onChange={handleVariantChange}
                       required
-                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#cc1f69]/20 focus:border-[#cc1f69] transition-all text-sm"
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827]/20 focus:border-gray-900 transition-all text-sm"
                       placeholder="0"
                     />
                   </div>
@@ -527,13 +527,13 @@ const ProductCard = () => {
                     </label>
 
                     {!imagePreview ? (
-                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 hover:border-[#cc1f69]/50 transition-all group">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 hover:border-gray-900/50 transition-all group">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <div className="p-2 bg-gray-100 rounded-full mb-2 group-hover:bg-[#cc1f69]/10 transition-colors">
-                            <FiUpload className="w-5 h-5 text-gray-400 group-hover:text-[#cc1f69]" />
+                          <div className="p-2 bg-gray-100 rounded-full mb-2 group-hover:bg-gray-900/10 transition-colors">
+                            <FiUpload className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
                           </div>
                           <p className="text-sm text-gray-500">
-                            <span className="font-semibold text-[#cc1f69]">
+                            <span className="font-semibold text-gray-900">
                               Click to upload
                             </span>{" "}
                             or drag and drop
@@ -586,13 +586,13 @@ const ProductCard = () => {
                     </label>
 
                     {!sizeChartPreview ? (
-                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 hover:border-[#cc1f69]/50 transition-all group">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-white hover:bg-gray-50 hover:border-gray-900/50 transition-all group">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <div className="p-2 bg-gray-100 rounded-full mb-2 group-hover:bg-[#cc1f69]/10 transition-colors">
-                            <FiUpload className="w-5 h-5 text-gray-400 group-hover:text-[#cc1f69]" />
+                          <div className="p-2 bg-gray-100 rounded-full mb-2 group-hover:bg-gray-900/10 transition-colors">
+                            <FiUpload className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
                           </div>
                           <p className="text-sm text-gray-500">
-                            <span className="font-semibold text-[#cc1f69]">
+                            <span className="font-semibold text-gray-900">
                               Click to upload
                             </span>{" "}
                             or drag and drop
@@ -639,7 +639,7 @@ const ProductCard = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex items-center gap-2 bg-[#cc1f69] text-white px-6 py-2.5 rounded-lg hover:bg-[#a91853] transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-sm hover:shadow-md font-medium text-sm"
+                    className="flex items-center gap-2 bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-[#a91853] transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-sm hover:shadow-md font-medium text-sm"
                   >
                     {submitting ? (
                       <>

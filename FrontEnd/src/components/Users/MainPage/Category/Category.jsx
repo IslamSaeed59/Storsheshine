@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 import { getCategories } from "../../../../Services/api";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import SubCategoryModal from "./SubCategoryModal";
 
-const Category = () => {
+const Category = ({ collectionsData }) => {
   const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +22,7 @@ const Category = () => {
             (sub) => sub.parentId === (cat._id || cat.id),
           ),
         }));
-        setCategories(categoriesWithSubs);
+        setCategories(categoriesWithSubs); // Show all categories
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
@@ -28,81 +31,73 @@ const Category = () => {
     fetchCategories();
   }, []);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } },
-  };
-
   return (
-    <section className="bg-gray-50 py-16 sm:py-24">
+    <section className="bg-white py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2
-            className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900"
-            style={{ color: "#cc1f69" }}
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-end text-center md:text-left mb-16">
+          <div className="max-w-2xl">
+            <h2 className="text-sm font-semibold tracking-[0.2em] uppercase text-primary mb-3">
+              {collectionsData?.CollectionsName || "Collections"}
+            </h2>
+            <h3 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
+               {collectionsData?.CollectionsDescription ? (
+                  <span className="whitespace-pre-line">{collectionsData.CollectionsDescription}</span>
+               ) : (
+                  <>Curated for the<br/>Modern Lifestyle</>
+               )}
+            </h3>
+          </div>
+          <button 
+            onClick={() => navigate('/products')}
+            className="mt-6 md:mt-0 flex items-center text-sm font-medium tracking-widest uppercase hover:text-primary transition-colors group"
           >
-            Shop by Category
-          </h2>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
-            Discover a wide range of products based on different categories.
-          </p>
-        </motion.div>
+            View All Categories
+            <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+        </div>
 
         {categories.length > 0 && (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8"
-          >
-            {categories.map((category) => (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-4 sm:gap-8 md:gap-12 lg:gap-16">
+            {categories.map((category, index) => (
               <motion.div
                 key={category._id || category.id}
-                variants={itemVariants}
-                className="group cursor-pointer text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                className="group cursor-pointer flex flex-col items-center text-center"
                 onClick={() => {
-                  const targetId =
-                    category.subCategories && category.subCategories.length > 0
-                      ? category.subCategories[0]._id ||
-                        category.subCategories[0].id
-                      : category._id || category.id;
-                  navigate(`/products?categoryId=${targetId}`);
+                  if (category.subCategories && category.subCategories.length > 0) {
+                    setSelectedCategory(category);
+                    setIsModalOpen(true);
+                  } else {
+                    navigate(`/products?categoryId=${category._id || category.id}`);
+                  }
                 }}
               >
-                <div className="relative overflow-hidden rounded-full w-24 h-24 sm:w-36 sm:h-36 md:w-48 md:h-48 mx-auto mb-2 md:mb-4 shadow-lg">
+                <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden mb-3 md:mb-5 bg-gray-50 shadow-sm group-hover:shadow-xl border border-gray-100 group-hover:border-primary/20 transition-all duration-500">
                   <img
-                    src={
-                      category.image || "https://via.placeholder.com/400x500"
-                    }
+                    src={category.image || "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?q=80&w=1976&auto=format&fit=crop"}
                     alt={category.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300 rounded-full" />
+                  {/* Subtle dark overlay on hover */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
                 </div>
-                <h3 className="text-xs sm:text-base md:text-xl font-semibold text-gray-900 group-hover:text-[#cc1f69] transition-colors">
+                <h4 className="text-[10px] sm:text-sm md:text-base lg:text-lg font-serif font-medium text-gray-900 group-hover:text-primary transition-colors line-clamp-2 px-1">
                   {category.name}
-                </h3>
+                </h4>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         )}
       </div>
+
+      <SubCategoryModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        parentCategory={selectedCategory} 
+      />
     </section>
   );
 };

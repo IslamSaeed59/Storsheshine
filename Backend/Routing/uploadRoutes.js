@@ -184,6 +184,31 @@ router.post("/", parser.single("productImage"), async (req, res) => {
 });
 
 /* ==============================
+   📸 Upload MainPage Image
+============================== */
+
+router.post("/mainpage", parser.single("mainPageImage"), async (req, res) => {
+  try {
+    if (!req.file)
+      return res.status(400).json({ message: "Please upload a file." });
+
+    const folder = `ecommerce/mainpage`;
+    const publicId = `mainpage-${Date.now()}`;
+
+    const result = await uploadToCloudinary(req.file.buffer, folder, publicId);
+
+    res.status(200).json({
+      message: "MainPage image uploaded successfully",
+      imageUrl: result.secure_url,
+      public_id: result.public_id,
+    });
+  } catch (error) {
+    console.error("❌ MainPage Upload error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+/* ==============================
    ⚠️ Error Handler
 ============================== */
 

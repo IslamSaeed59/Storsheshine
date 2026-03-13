@@ -1,147 +1,96 @@
-import { Link, NavLink } from "react-router-dom";
-import {
-  ShoppingBag,
-  Users,
-  ShoppingBagIcon,
-  ChevronDown,
-  Store,
-  ChartNoAxesGantt,
-} from "lucide-react";
-import { useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { ShoppingBag, Users, Store, Tag, Home } from "lucide-react";
 
 const Sidebar = ({ onClose }) => {
-  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const location = useLocation();
 
-  const navLinkClasses =
-    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 font-medium text-xl transition-all duration-200 hover:bg-[#cc1f69] hover:text-white";
-  const activeNavLinkClasses = "bg-[#cc1f69] text-white";
+  const navItems = [
+    {
+      name: "Storefront",
+      path: "/",
+      icon: <Store size={20} />,
+      isExternal: true,
+    },
+    {
+      name: "Main Page",
+      path: "/admin/mainpage",
+      icon: <Home size={20} />,
+    },
+    { name: "Categories", path: "/admin/category", icon: <Tag size={20} /> },
+    {
+      name: "Products",
+      path: "/admin/products",
+      icon: <ShoppingBag size={20} />,
+    },
+    { name: "Users", path: "/admin/users", icon: <Users size={20} /> },
+  ];
 
   return (
-    <div className="flex min-h-screen w-64 flex-col bg-white shadow-lg ">
-      <div className="flex items-center justify-center p-6">
+    <div className="flex flex-col h-full bg-white">
+      {/* Branding */}
+      <div className="flex items-center justify-center p-8 border-b border-gray-50 max-h-20">
         <Link
           to="/admin"
-          className="text-3xl font-bold"
-          style={{ color: "#cc1f69" }}
+          onClick={onClose}
+          className="text-2xl font-serif font-bold tracking-widest text-gray-900"
         >
-          SheShine
+          SHE<span className="text-primary">SHINE</span>
+          <span className="block text-[8px] tracking-[0.3em] font-sans text-gray-400 font-normal mt-1 uppercase text-center">
+            Admin Panel
+          </span>
         </Link>
       </div>
-      <nav className="flex-1 space-y-2 p-4">
-        {/* Store  */}
-        <NavLink
-          onClick={onClose}
-          to="/"
-          className={({ isActive }) =>
-            `${navLinkClasses} ${
-              isActive ? activeNavLinkClasses : ""
-            } font-semibold`
-          }
-        >
-          <Store className="h-5 w-5" />
-          Store
-        </NavLink>
-        {/* <NavLink
-          to="/admin/dashboard"
-          className={({ isActive }) =>
-            `${navLinkClasses} ${
-              isActive ? activeNavLinkClasses : ""
-            } font-semibold`
-          }
-        >
-          <LayoutDashboard className="h-5 w-5" />
-          Dashboard
-        </NavLink> */}
 
-        {/* Category */}
-        <NavLink
-          onClick={onClose}
-          to="/admin/category"
-          className={({ isActive }) =>
-            `${navLinkClasses} ${
-              isActive ? activeNavLinkClasses : ""
-            } font-semibold`
-          }
-        >
-          <ChartNoAxesGantt className="h-5 w-5" />
-          Category
-        </NavLink>
+      {/* Navigation Links */}
+      <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto custom-scrollbar">
+        <h4 className="px-4 text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-4">
+          Management
+        </h4>
 
-        <NavLink
-          onClick={onClose}
-          to="/admin/products"
-          className={({ isActive }) =>
-            `${navLinkClasses} ${
-              isActive ? activeNavLinkClasses : ""
-            } font-semibold`
-          }
-        >
-          <ShoppingBag className="h-5 w-5" />
-          Products
-        </NavLink>
+        {navItems.map((item) => {
+          const isActive =
+            (location.pathname.startsWith(item.path) && item.path !== "/") ||
+            location.pathname === item.path;
 
-        <NavLink
-          onClick={onClose}
-          to="/admin/users"
-          className={({ isActive }) =>
-            `${navLinkClasses} ${
-              isActive ? activeNavLinkClasses : ""
-            } font-semibold`
-          }
-        >
-          <Users className="h-5 w-5" />
-          Users
-        </NavLink>
-
-        <div className="space-y-2">
-          {/* Parent Link */}
-          <div className="flex items-center justify-between">
-            {/* NavLink part */}
-            {/* <NavLink
-              to="/admin/orders"
-              className={({ isActive }) =>
-                `${navLinkClasses} flex-1 font-semibold ${
-                  isActive ? activeNavLinkClasses : ""
-                }`
-              }
-            >
-              <ShoppingBag className="h-5 w-5" />
-              <span>Orders</span>
-            </NavLink> */}
-
-            {/* Arrow button (toggles submenu) */}
-            {/* <button
-              onClick={() => setIsOrdersOpen(!isOrdersOpen)}
-              className="p-1 rounded-md hover:bg-gray-100 transition"
-            >
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-300 ${
-                  isOrdersOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button> */}
-          </div>
-
-          {/* Child Links (collapsible) */}
-          <div
-            className={`ml-6 overflow-hidden transition-all duration-300 ${
-              isOrdersOpen ? "max-h-40" : "max-h-0"
-            }`}
-          >
+          return (
             <NavLink
+              key={item.name}
+              to={item.path}
               onClick={onClose}
-              to="/admin/orders/accepted"
-              className={({ isActive }) =>
-                `block px-3 py-2 text-sm rounded-lg hover:bg-gray-100 transition ${
-                  isActive ? activeNavLinkClasses : ""
-                }`
-              }
+              className={`group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
+                isActive
+                  ? "bg-gray-50 text-gray-900 shadow-sm ring-1 ring-gray-100"
+                  : "text-gray-500 hover:bg-gray-50/50 hover:text-gray-900"
+              }`}
             >
-              Accepted Orders
+              <div className="flex items-center gap-3">
+                <span
+                  className={`${isActive ? "text-primary" : "text-gray-400 group-hover:text-gray-600"} transition-colors`}
+                >
+                  {item.icon}
+                </span>
+                <span
+                  className={`text-sm tracking-wide ${isActive ? "font-semibold" : "font-medium"}`}
+                >
+                  {item.name}
+                </span>
+              </div>
+
+              {isActive && (
+                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              )}
             </NavLink>
-          </div>
-        </div>
+          );
+        })}
       </nav>
+
+      {/* Footer Info */}
+      <div className="p-6 border-t border-gray-50">
+        <div className="bg-gray-50 rounded-xl p-4 text-center">
+          <p className="text-xs text-gray-500 mb-1">SheShine Admin</p>
+          <p className="text-[10px] text-gray-400">Version 1.0.0</p>
+        </div>
+      </div>
     </div>
   );
 };

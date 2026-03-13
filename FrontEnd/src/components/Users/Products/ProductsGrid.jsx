@@ -1,6 +1,7 @@
 import React from "react";
-import { Heart, ShoppingCart, Eye, Star } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const ProductsGrid = ({ products }) => {
   const navigate = useNavigate();
@@ -9,62 +10,55 @@ const ProductsGrid = ({ products }) => {
     navigate(`/Product/${productId}`);
   };
 
-  const handleAddToCart = (e, product) => {
-    e.stopPropagation();
-    console.log("Added to cart:", product);
-  };
-
-  const handleAddToWishlist = (e, product) => {
-    e.stopPropagation();
-    console.log("Added to wishlist:", product);
-  };
-
   const calculateDiscountedPrice = (basePrice, discount) => {
     return (parseFloat(basePrice) * (1 - discount / 100)).toFixed(2);
   };
 
-  console.log("ProductsGrid received products:", products);
-
   if (!products || products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white rounded-lg border border-gray-200">
-        <div className="bg-gray-100 rounded-full p-6 mb-4">
-          <ShoppingCart size={48} className="text-gray-400" />
-        </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          No products found
+      <div className="flex flex-col items-center justify-center py-32 px-4 text-center">
+        <h3 className="text-2xl font-serif font-bold text-gray-900 mb-4">
+          No matches found
         </h3>
-        <p className="text-gray-500 max-w-md">
-          We couldn't find any products matching your criteria. Try adjusting
-          your filters or browse our full collection.
+        <p className="text-gray-500 font-light max-w-md mb-8">
+          We couldn't find any products matching your current filters. Try
+          adjusting your search criteria or browse our wider collection.
         </p>
+        <button
+          className="px-8 py-3 bg-gray-900 text-white text-xs font-semibold tracking-[0.2em] uppercase hover:bg-primary transition-colors"
+          onClick={() => window.location.reload()}
+        >
+          Clear All Filters
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-      {products.map((product) => (
-        <div
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+      {products.map((product, index) => (
+        <motion.div
           key={product._id}
-          className="group bg-white rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer border border-gray-100 hover:border-pink-200"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: index * 0.05 }}
+          className="group flex flex-col cursor-pointer"
           onClick={() => handleViewDetails(product._id)}
         >
           {/* Image Container */}
-          <div className="relative w-full aspect-square overflow-hidden bg-white">
+          <div className="relative aspect-[3/4] mb-6 bg-gray-50 overflow-hidden group">
             <img
               src={
                 (Array.isArray(product.images)
                   ? product.images[0]
                   : product.images) ||
-                product.image ||
-                "/api/placeholder/400/400"
+                "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop"
               }
               alt={product.name}
-              className={`w-full h-full object-contain object-center transition-all duration-700 ${
+              className={`w-full h-full object-cover object-center transition-transform duration-700 ${
                 Array.isArray(product.images) && product.images.length > 1
                   ? "group-hover:opacity-0"
-                  : "group-hover:scale-110"
+                  : "group-hover:scale-105"
               }`}
               loading="lazy"
             />
@@ -72,155 +66,102 @@ const ProductsGrid = ({ products }) => {
               <img
                 src={product.images[1]}
                 alt={product.name}
-                className="absolute inset-0 w-full h-full object-contain object-center opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-110"
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105"
                 loading="lazy"
               />
             )}
 
-            {/* Action Buttons */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2 sm:pb-6">
-              <div className="flex gap-2 sm:gap-3 bg-white/90 backdrop-blur-sm p-1.5 sm:p-2 rounded-full shadow-lg">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewDetails(product._id);
-                  }}
-                  className="p-1.5 sm:p-2 bg-white rounded-full text-gray-700 hover:bg-gray-100 transition-all duration-300 shadow-sm"
-                  aria-label="Quick view"
-                >
-                  <Eye size={16} />
-                </button>
-              </div>
-            </div>
-
             {/* Badges */}
-            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1 sm:gap-2">
+            <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
               {product.discount > 0 && (
-                <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
-                  {product.discount}% OFF
-                </span>
-              )}
-              {product.isBestseller && (
-                <span className="bg-gradient-to-r from-amber-400 to-pink-400 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
-                  BESTSELLER
+                <span className="bg-primary text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
+                  Sale -{product.discount}%
                 </span>
               )}
               {product.isNew && (
-                <span className="bg-gradient-to-r from-green-400 to-emerald-400 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
-                  NEW
-                </span>
-              )}
-              {(product.ProductVariants?.reduce(
-                (acc, item) => acc + (Number(item.stock) || 0),
-                0,
-              ) || 0) <= 0 && (
-                <span className="bg-gradient-to-r from-red-500 to-rose-500 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
-                  OUT OF STOCK
+                <span className="bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
+                  New
                 </span>
               )}
             </div>
 
-            {/* Wishlist Button */}
+            {/* Quick Add Overlay */}
+            <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-20">
+              <button
+                className="w-full bg-white/95 backdrop-blur-sm text-gray-900 font-medium tracking-wide uppercase text-xs py-4 flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewDetails(product._id);
+                }}
+              >
+                <ShoppingBag size={16} />
+                Quick View
+              </button>
+            </div>
+
+            {/* Wishlist Icon */}
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddToWishlist(e, product);
-              }}
-              className="absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 bg-white/90 backdrop-blur-sm rounded-full text-gray-600 hover:text-pink-500 transition-all duration-300 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-110 shadow-md"
-              aria-label="Add to wishlist"
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-4 right-4 z-20 text-gray-400 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
             >
-              <Heart size={18} />
+              <Heart size={20} />
             </button>
           </div>
 
           {/* Product Info */}
-          <div className="p-2 sm:p-3 md:p-4">
-            {/* Brand */}
+          <div className="text-center flex flex-col flex-grow">
             {product.brand && (
-              <p className="text-[10px] sm:text-xs text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 truncate">
-                {product.brand.length > 15
-                  ? `${product.brand.substring(0, 12)}...`
-                  : product.brand}
-              </p>
+              <span className="text-[10px] font-semibold tracking-[0.2em] text-gray-400 uppercase mb-2">
+                {product.brand}
+              </span>
             )}
 
-            {/* Product Name */}
-            <h3 className="text-xs sm:text-sm font-medium text-gray-800 mb-1 sm:mb-2 line-clamp-2 h-8 sm:h-10 hover:text-pink-600 transition-colors">
-              {product.name.length > 50
-                ? `${product.name.substring(0, 45)}...`
-                : product.name}
+            <h3 className="text-lg font-serif font-medium text-gray-900 mb-2 px-2 hover:text-primary transition-colors truncate">
+              {product.name}
             </h3>
 
-            {/* Price */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                {product.discount > 0 ? (
-                  <>
-                    <span className="text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                      EGP
-                      {calculateDiscountedPrice(
-                        product.basePrice,
-                        product.discount,
-                      )}
-                    </span>
-                    <span className="text-[10px] sm:text-xs text-gray-400 line-through">
-                      EGP{parseFloat(product.basePrice).toFixed(2)}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-sm sm:text-base md:text-lg font-bold text-gray-800">
-                    EGP{parseFloat(product.basePrice).toFixed(2)}
+            {/* Sizes display */}
+            {product.ProductVariants && product.ProductVariants.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-1.5 mb-3 px-2">
+                {[
+                  ...new Set(
+                    product.ProductVariants.map((v) => v.size).filter(
+                      (s) => s && s !== "NoSize",
+                    ),
+                  ),
+                ].map((size, idx) => (
+                  <span
+                    key={idx}
+                    className="text-[10px] sm:text-xs font-medium text-gray-500 border border-gray-200 px-2 py-0.5 whitespace-nowrap"
+                  >
+                    {size}
                   </span>
-                )}
+                ))}
               </div>
-            </div>
+            )}
 
-            {/* Available Sizes */}
-            <div className="flex flex-wrap gap-1.5 mt-2 min-h-[1.75rem]">
-              {product.ProductVariants && (
+            <div className="mt-auto flex items-center justify-center gap-3">
+              {product.discount > 0 ? (
                 <>
-                  {[
-                    ...new Set(
-                      product.ProductVariants.map((v) => v.size).filter(
-                        (s) => s && s !== "NoSize",
-                      ),
-                    ),
-                  ]
-                    .slice(0, 3)
-                    .map((size, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center px-2 py-1 text-[11px] font-medium bg-black text-white rounded-md border border-gray-700 shadow-sm"
-                        title={`Size: ${size}`}
-                      >
-                        {size}
-                      </span>
-                    ))}
-
-                  {[
-                    ...new Set(
-                      product.ProductVariants.map((v) => v.size).filter(
-                        (s) => s && s !== "NoSize",
-                      ),
-                    ),
-                  ].length > 3 && (
-                    <span className="inline-flex items-center px-2 py-1 text-[11px] font-medium bg-gray-900 text-gray-300 rounded-md border border-gray-700">
-                      +
-                      {[
-                        ...new Set(
-                          product.ProductVariants.map((v) => v.size).filter(
-                            (s) => s && s !== "NoSize",
-                          ),
-                        ),
-                      ].length - 3}{" "}
-                      more
-                    </span>
-                  )}
+                  <span className="text-sm text-gray-400 line-through">
+                    EGP {parseFloat(product.basePrice).toFixed(2)}
+                  </span>
+                  <span className="text-base font-medium text-primary">
+                    EGP{" "}
+                    {calculateDiscountedPrice(
+                      product.basePrice,
+                      product.discount,
+                    )}
+                  </span>
                 </>
+              ) : (
+                <span className="text-base font-medium text-gray-900">
+                  EGP {parseFloat(product.basePrice).toFixed(2)}
+                </span>
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
