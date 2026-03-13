@@ -2,8 +2,8 @@ import axios from "axios";
 
 // Create an axios instance
 const apiClient = axios.create({
-  // baseURL: "https://api-chi-eight-27.vercel.app/api/",
-  baseURL: "http://localhost:9000/api/",
+  baseURL: "https://api-chi-eight-27.vercel.app/api/",
+  // baseURL: "http://localhost:9000/api/",
 
   headers: {
     "Content-Type": "application/json",
@@ -159,8 +159,10 @@ export const getProductVariants = (productId) =>
 // ==========================
 
 export const getMainPage = () => apiClient.get("/mainpage");
-export const createMainPage = (mainPageData) => apiClient.post("/mainpage", mainPageData);
-export const updateMainPage = (mainPageData) => apiClient.put("/mainpage", mainPageData);
+export const createMainPage = (mainPageData) =>
+  apiClient.post("/mainpage", mainPageData);
+export const updateMainPage = (mainPageData) =>
+  apiClient.put("/mainpage", mainPageData);
 
 export const uploadMainPageImage = (imageData) =>
   apiClient.post("/upload/mainpage", imageData, {
