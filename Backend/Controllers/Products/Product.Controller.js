@@ -14,15 +14,16 @@ const deleteFromCloudinary = async (imageUrl) => {
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-    const parts = imageUrl.split('/');
-    const uploadIndex = parts.indexOf('upload');
-    
+    const parts = imageUrl.split("/");
+    const uploadIndex = parts.indexOf("upload");
+
     if (uploadIndex !== -1) {
       const pathParts = parts.slice(uploadIndex + 2);
-      const fullPath = pathParts.join('/'); 
-      const lastDot = fullPath.lastIndexOf('.');
-      const publicId = lastDot !== -1 ? fullPath.substring(0, lastDot) : fullPath;
-      
+      const fullPath = pathParts.join("/");
+      const lastDot = fullPath.lastIndexOf(".");
+      const publicId =
+        lastDot !== -1 ? fullPath.substring(0, lastDot) : fullPath;
+
       await cloudinary.uploader.destroy(publicId);
     }
   } catch (err) {
@@ -70,19 +71,20 @@ exports.createProduct = asyncHandler(async (req, res) => {
 });
 
 exports.getProducts = asyncHandler(async (req, res) => {
-  const { page, limit, search, category, subCategories, minPrice, maxPrice } = req.query;
+  const { page, limit, search, category, subCategories, minPrice, maxPrice } =
+    req.query;
 
   const query = {};
   if (search) {
     const regex = new RegExp(search, "i");
     query.$or = [{ name: regex }, { description: regex }];
   }
-  
+
   if (category || subCategories) {
     const targetIds = [];
     if (category) targetIds.push(category);
     if (subCategories) {
-      targetIds.push(...subCategories.split(','));
+      targetIds.push(...subCategories.split(","));
     }
     if (targetIds.length > 0) {
       query.categoryId = { $in: targetIds };
@@ -91,8 +93,10 @@ exports.getProducts = asyncHandler(async (req, res) => {
 
   if (minPrice || maxPrice) {
     query.basePrice = {};
-    if (minPrice && !isNaN(parseFloat(minPrice))) query.basePrice.$gte = parseFloat(minPrice);
-    if (maxPrice && !isNaN(parseFloat(maxPrice))) query.basePrice.$lte = parseFloat(maxPrice);
+    if (minPrice && !isNaN(parseFloat(minPrice)))
+      query.basePrice.$gte = parseFloat(minPrice);
+    if (maxPrice && !isNaN(parseFloat(maxPrice)))
+      query.basePrice.$lte = parseFloat(maxPrice);
   }
 
   // If pagination params are provided, paginate; otherwise return all
@@ -111,7 +115,9 @@ exports.getProducts = asyncHandler(async (req, res) => {
     currentPage = pageNum;
 
     products = await Product.find(query)
-      .select("_id name isBestseller images discount basePrice categoryId")
+      .select(
+        "_id name isBestseller images discount basePrice categoryId createdAt",
+      )
       .populate("categoryId", "name parentId")
       .sort({ name: 1 }) // Sort A to Z (ascending)
       .skip(skip)
@@ -129,7 +135,9 @@ exports.getProducts = asyncHandler(async (req, res) => {
 
   const productsWithData = await Promise.all(
     products.map(async (product) => {
-      const variants = await ProductVariant.find({ productId: product._id }).select("size");
+      const variants = await ProductVariant.find({
+        productId: product._id,
+      }).select("size");
       const p = product.toObject();
       return {
         ...p,
@@ -191,13 +199,15 @@ exports.updateProduct = asyncHandler(async (req, res) => {
   }
 
   // Handle Cloudinary image deletion for replaced or removed images
-  if (req.body.hasOwnProperty('images') && Array.isArray(images)) {
-     const newImageUrls = images.filter(img => typeof img === 'string');
-     const imagesToDelete = oldProduct.images.filter(oldImg => !newImageUrls.includes(oldImg));
-     
-     if (imagesToDelete.length > 0) {
-       await Promise.all(imagesToDelete.map(img => deleteFromCloudinary(img)));
-     }
+  if (req.body.hasOwnProperty("images") && Array.isArray(images)) {
+    const newImageUrls = images.filter((img) => typeof img === "string");
+    const imagesToDelete = oldProduct.images.filter(
+      (oldImg) => !newImageUrls.includes(oldImg),
+    );
+
+    if (imagesToDelete.length > 0) {
+      await Promise.all(imagesToDelete.map((img) => deleteFromCloudinary(img)));
+    }
   }
 
   const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
@@ -210,7 +220,7 @@ exports.updateProduct = asyncHandler(async (req, res) => {
 exports.deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const product = await Product.findById(id);
-  
+
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
@@ -218,14 +228,14 @@ exports.deleteProduct = asyncHandler(async (req, res) => {
 
   // Delete all product images from Cloudinary
   if (product.images && product.images.length > 0) {
-     await Promise.all(product.images.map(img => deleteFromCloudinary(img)));
+    await Promise.all(product.images.map((img) => deleteFromCloudinary(img)));
   }
 
   // Delete all associated variant images from Cloudinary
   const variants = await ProductVariant.find({ productId: id });
   for (const variant of variants) {
-     if (variant.imageVariant) await deleteFromCloudinary(variant.imageVariant);
-     if (variant.sizeChart) await deleteFromCloudinary(variant.sizeChart);
+    if (variant.imageVariant) await deleteFromCloudinary(variant.imageVariant);
+    if (variant.sizeChart) await deleteFromCloudinary(variant.sizeChart);
   }
 
   await Product.findByIdAndDelete(id);
@@ -264,20 +274,24 @@ exports.updateCategory = asyncHandler(async (req, res) => {
   }
 
   // If the image is being changed (or removed entirely), delete the old image from Cloudinary
-  if (req.body.hasOwnProperty('image') && req.body.image !== oldCategory.image && oldCategory.image) {
-     await deleteFromCloudinary(oldCategory.image);
+  if (
+    req.body.hasOwnProperty("image") &&
+    req.body.image !== oldCategory.image &&
+    oldCategory.image
+  ) {
+    await deleteFromCloudinary(oldCategory.image);
   }
 
   const updatedCategory = await Category.findByIdAndUpdate(id, req.body, {
     new: true,
   });
-  
+
   res.json(updatedCategory);
 });
 
 exports.deleteCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  
+
   const categoryToDelete = await Category.findById(id);
   if (!categoryToDelete) {
     res.status(404);
@@ -286,12 +300,12 @@ exports.deleteCategory = asyncHandler(async (req, res) => {
 
   // Delete associated image from Cloudinary if it exists
   if (categoryToDelete.image) {
-     await deleteFromCloudinary(categoryToDelete.image);
+    await deleteFromCloudinary(categoryToDelete.image);
   }
 
   await Category.deleteMany({ parentId: id });
   await Category.findByIdAndDelete(id);
-  
+
   res.json({ message: "Category removed" });
 });
 
@@ -336,26 +350,34 @@ exports.updateProductVariant = asyncHandler(async (req, res) => {
   }
 
   // Check if imageVariant was updated/removed
-  if (req.body.hasOwnProperty('imageVariant') && req.body.imageVariant !== oldVariant.imageVariant && oldVariant.imageVariant) {
-     await deleteFromCloudinary(oldVariant.imageVariant);
+  if (
+    req.body.hasOwnProperty("imageVariant") &&
+    req.body.imageVariant !== oldVariant.imageVariant &&
+    oldVariant.imageVariant
+  ) {
+    await deleteFromCloudinary(oldVariant.imageVariant);
   }
 
   // Check if sizeChart was updated/removed
-  if (req.body.hasOwnProperty('sizeChart') && req.body.sizeChart !== oldVariant.sizeChart && oldVariant.sizeChart) {
-     await deleteFromCloudinary(oldVariant.sizeChart);
+  if (
+    req.body.hasOwnProperty("sizeChart") &&
+    req.body.sizeChart !== oldVariant.sizeChart &&
+    oldVariant.sizeChart
+  ) {
+    await deleteFromCloudinary(oldVariant.sizeChart);
   }
 
   const updatedVariant = await ProductVariant.findByIdAndUpdate(id, req.body, {
     new: true,
   });
-  
+
   res.json(updatedVariant);
 });
 
 exports.deleteProductVariant = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const variant = await ProductVariant.findById(id);
-  
+
   if (!variant) {
     res.status(404);
     throw new Error("Variant not found");
@@ -429,7 +451,9 @@ exports.getBestsellerProducts = asyncHandler(async (req, res) => {
 
   const productsWithData = await Promise.all(
     products.map(async (product) => {
-      const variants = await ProductVariant.find({ productId: product._id }).select("size");
+      const variants = await ProductVariant.find({
+        productId: product._id,
+      }).select("size");
       const p = product.toObject();
       return {
         ...p,
@@ -451,7 +475,9 @@ exports.getFeaturedProducts = asyncHandler(async (req, res) => {
 
   const productsWithData = await Promise.all(
     products.map(async (product) => {
-      const variants = await ProductVariant.find({ productId: product._id }).select("size");
+      const variants = await ProductVariant.find({
+        productId: product._id,
+      }).select("size");
       const p = product.toObject();
       return {
         ...p,
