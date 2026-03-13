@@ -28,6 +28,7 @@ const Products = () => {
   const [totalProducts, setTotalProducts] = useState(0);
   const itemsPerPage = 20;
   const navigate = useNavigate();
+  const debounceTimerRef = React.useRef(null);
 
   useEffect(() => {
     fetchProducts(1, "", "");
@@ -86,13 +87,34 @@ const Products = () => {
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
       setCurrentPage(1); // Reset to first page on search
       setSelectedCategory(""); // Reset category when searching
       fetchProducts(1, searchTerm, "");
     }
   };
 
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      setCurrentPage(1);
+      setSelectedCategory("");
+      fetchProducts(1, value, "");
+    }, 500);
+  };
+
   const handleCategoryChange = (e) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
     const categoryId = e.target.value;
     setSelectedCategory(categoryId);
     setSearchTerm("");
@@ -100,35 +122,6 @@ const Products = () => {
 
     fetchProducts(1, "", categoryId);
   };
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
-        <div className="relative mb-6">
-          <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse blur-md"></div>
-          <img
-            src="/Logo1.png"
-            alt="Loading"
-            className="relative w-24 h-auto animate-bounce duration-1000"
-          />
-        </div>
-        <div className="flex justify-center gap-2">
-          <div
-            className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
-            style={{ animationDelay: "0s" }}
-          ></div>
-          <div
-            className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
-            style={{ animationDelay: "0.2s" }}
-          ></div>
-          <div
-            className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
-            style={{ animationDelay: "0.4s" }}
-          ></div>
-        </div>
-      </div>
-    );
-  }
 
   // Pagination Logic
   const indexOfLastItem = Math.min(currentPage * itemsPerPage, totalProducts);
@@ -163,7 +156,7 @@ const Products = () => {
             className="block w-full pl-11 pr-4 py-3 bg-gray-50 border-transparent rounded-xl text-sm transition-all focus:bg-white focus:border-gray-200 focus:ring-4 focus:ring-primary/5 placeholder:text-gray-400 text-gray-900"
             placeholder="Search by name, brand, or SKU..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             onKeyDown={handleSearch}
           />
         </div>
@@ -232,7 +225,36 @@ const Products = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-50 text-sm">
-              {currentProducts.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-24">
+                    <div className="flex flex-col items-center justify-center w-full">
+                      <div className="relative mb-6">
+                        <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse blur-md"></div>
+                        <img
+                          src="/Logo1.png"
+                          alt="Loading"
+                          className="relative w-24 h-auto animate-bounce duration-1000"
+                        />
+                      </div>
+                      <div className="flex justify-center gap-2">
+                        <div
+                          className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
+                          style={{ animationDelay: "0s" }}
+                        ></div>
+                        <div
+                          className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
+                          style={{ animationDelay: "0.2s" }}
+                        ></div>
+                        <div
+                          className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
+                          style={{ animationDelay: "0.4s" }}
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ) : currentProducts.length > 0 ? (
                 currentProducts.map((product, index) => (
                   <tr
                     key={product._id}
