@@ -16,7 +16,7 @@ const BestProduct = () => {
         const response = await getFeaturedProducts();
         // The API returns an array. We'll pick the first one for the main banner.
         if (response.data && response.data.length > 0) {
-           setProduct(response.data[0]);
+          setProduct(response.data[0]);
         }
       } catch (error) {
         console.error("Error fetching featured product:", error);
@@ -46,8 +46,10 @@ const BestProduct = () => {
             </div>
             <img
               src={optimizeCloudinaryUrl(
-                product.images && product.images.length > 0 ? product.images[0] : "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=2000&auto=format&fit=crop",
-                { width: 800, quality: "auto" }
+                product.images && product.images.length > 0
+                  ? product.images[0]
+                  : "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=2000&auto=format&fit=crop",
+                { width: 800, quality: "auto" },
               )}
               alt={product.name}
               className="w-full h-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-700"
@@ -61,30 +63,35 @@ const BestProduct = () => {
                 Limited Edition
               </span>
             </div>
-            
+
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-gray-900 leading-tight mb-4">
               {product.name}
             </h2>
-            
+
             <div className="flex items-baseline gap-4 mb-6">
               {product.discount > 0 ? (
                 <>
                   <span className="text-2xl lg:text-3xl font-light text-primary">
-                    ${(parseFloat(product.basePrice) * (1 - product.discount / 100)).toFixed(2)}
+                    EGP{" "}
+                    {(
+                      parseFloat(product.basePrice) *
+                      (1 - product.discount / 100)
+                    ).toFixed(2)}
                   </span>
                   <span className="text-lg text-gray-400 line-through">
-                    ${parseFloat(product.basePrice).toFixed(2)}
+                    EGP {parseFloat(product.basePrice).toFixed(2)}
                   </span>
                 </>
               ) : (
                 <span className="text-2xl lg:text-3xl font-light text-gray-900">
-                  ${parseFloat(product.basePrice).toFixed(2)}
+                  EGP {parseFloat(product.basePrice).toFixed(2)}
                 </span>
               )}
             </div>
-            
+
             <p className="text-gray-600 font-light leading-relaxed mb-10">
-              {product.description || "Experience the perfect blend of style and comfort. Handcrafted from premium materials for the ultimate luxurious feel. Make it yours today."}
+              {product.description ||
+                "Experience the perfect blend of style and comfort. Handcrafted from premium materials for the ultimate luxurious feel. Make it yours today."}
             </p>
 
             {/* Actions */}
@@ -96,7 +103,9 @@ const BestProduct = () => {
                 >
                   <Minus size={16} />
                 </button>
-                <span className="w-12 text-center text-sm font-medium">{quantity}</span>
+                <span className="w-12 text-center text-sm font-medium">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => setQuantity((prev) => prev + 1)}
                   className="px-5 h-full text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
@@ -106,11 +115,16 @@ const BestProduct = () => {
               </div>
 
               <button
-                onClick={() => navigate(`/Product/${product._id || product.id}`)}
+                onClick={() =>
+                  navigate(`/Product/${product._id || product.id}`)
+                }
                 className="w-full sm:flex-1 h-14 bg-gray-900 text-white font-medium tracking-wide uppercase text-sm hover:bg-primary transition-colors flex items-center justify-center gap-2 group"
               >
                 Discover More
-                <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform" />
+                <ArrowRight
+                  size={18}
+                  className="transform group-hover:translate-x-1 transition-transform"
+                />
               </button>
             </div>
           </div>
