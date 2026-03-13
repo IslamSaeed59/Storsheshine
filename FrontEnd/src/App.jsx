@@ -25,10 +25,12 @@ import UserProducts from "./components/Users/Products/UserProducts";
 import ProductDetails from "./components/Users/Products/ProductDetails";
 import CartDrawer from "./components/Users/Cart/CartDrawer";
 import ScrollToTop from "./components/utils/ScrollToTop";
+import { CartProvider } from "./context/CartContext";
 
 const App = () => {
   return (
     <>
+      <CartProvider>
       <Router>
         <ScrollToTop />
         <Routes>
@@ -78,12 +80,11 @@ const App = () => {
             {/* UserProducts */}
             <Route path="Products" element={<UserProducts />} />
             <Route path="Product/:id" element={<ProductDetails />} />
-            <Route path="cart" element={<CartDrawer />} />
-
           </Route>
         </Routes>
       </Router>
       <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+      </CartProvider>
     </>
   );
 };

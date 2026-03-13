@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LayoutDashboard, LogOut,  User, Heart } from "lucide-react";
+import { Menu, X, LayoutDashboard, LogOut,  User, Heart, ShoppingBag } from "lucide-react";
 import { toast } from "react-toastify";
+import { useCart } from "../../context/CartContext";
 
 const UserTopBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,6 +11,7 @@ const UserTopBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  const { getCartCount, setIsCartOpen } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -114,6 +116,26 @@ const UserTopBar = () => {
                     <LogOut size={20} />
                   </button>
                 )}
+
+                <button 
+                  onClick={() => setIsCartOpen(true)} 
+                  className={`${iconClass} relative`} 
+                  title="Cart"
+                >
+                  <ShoppingBag size={20} />
+                  <AnimatePresence>
+                    {getCartCount() > 0 && (
+                      <motion.span
+                        key={getCartCount()}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-1.5 -right-2 bg-primary text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center"
+                      >
+                        {getCartCount()}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
               </div>
 
 
@@ -162,6 +184,28 @@ const UserTopBar = () => {
                     <span className="text-xs uppercase tracking-wider">Logout</span>
                   </button>
                 )}
+                
+                <button 
+                  onClick={() => { setIsCartOpen(true); setIsMenuOpen(false); }} 
+                  className="flex flex-col items-center hover:text-primary relative"
+                >
+                  <div className="relative mb-2">
+                    <ShoppingBag size={24} />
+                    <AnimatePresence>
+                      {getCartCount() > 0 && (
+                        <motion.span
+                          key={getCartCount()}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute -top-1 -right-2 bg-primary text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center"
+                        >
+                          {getCartCount()}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <span className="text-xs uppercase tracking-wider">Cart</span>
+                </button>
               </div>
 
               {user && user.role === "admin" && (

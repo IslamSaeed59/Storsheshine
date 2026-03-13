@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Info, Minus, Plus, X, Ruler, ShoppingBag, Heart, Share2, ShieldCheck, Truck, RefreshCw } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Info, Minus, Plus, X, Ruler, ShoppingBag } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useCart } from "../../../context/CartContext";
 
 const ProductCard = ({ product }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -13,6 +14,7 @@ const ProductCard = ({ product }) => {
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [selectedSizeChart, setSelectedSizeChart] = useState(null);
   const [activeTab, setActiveTab] = useState("details"); // 'details' | 'shipping' | 'returns'
+  const { addToCart, setIsCartOpen } = useCart();
 
   // Reset selected image when variant changes
   useEffect(() => {
@@ -49,7 +51,7 @@ const ProductCard = ({ product }) => {
         setSelectedImage(images[0]);
       }
     }
-  }, [product]);
+  }, [product, selectedImage]);
 
   // Update selected size chart when variant changes
   useEffect(() => {
@@ -66,8 +68,8 @@ const ProductCard = ({ product }) => {
       const uniqueColors = [
         ...new Set(
           product.ProductVariants.flatMap((v) =>
-            Array.isArray(v.color) ? v.color : [v.color]
-          )
+            Array.isArray(v.color) ? v.color : [v.color],
+          ),
         ),
       ];
 
@@ -78,7 +80,7 @@ const ProductCard = ({ product }) => {
         const variantsWithColor = product.ProductVariants.filter((v) =>
           Array.isArray(v.color)
             ? v.color.includes(firstColor)
-            : v.color === firstColor
+            : v.color === firstColor,
         );
 
         const defaultVariant =
@@ -102,7 +104,6 @@ const ProductCard = ({ product }) => {
     Category,
     ProductVariants,
     isBestseller,
-    isFeatured,
   } = product;
 
   // Calculate prices based on selected variant or base price
@@ -149,6 +150,25 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    addToCart({
+      id: product._id,
+      name: product.name,
+      brand: product.brand,
+      price: currentPrice,
+      image: displayImage,
+      quantity: quantity,
+      size: selectedVariant?.size || null,
+      color: selectedColor || null,
+    });
+
+    // Reset quantity after adding
+    setQuantity(1);
+    setIsCartOpen(true); // optionally open the cart immediately
+  };
+
   const displayImage =
     selectedImage ||
     (Array.isArray(allImages) ? allImages[0] : allImages[0]) ||
@@ -179,10 +199,8 @@ const ProductCard = ({ product }) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
-          
           {/* Left Column - Image Gallery (Sticky on Desktop) */}
           <div className="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-6 lg:sticky lg:top-32 self-start">
-            
             {/* Thumbnails (Vertical on Desktop/Tablet, Horizontal on Mobile) */}
             {allImages.length > 1 && (
               <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-visible pb-2 md:pb-0 w-full md:w-20 lg:w-24 shrink-0 custom-scrollbar">
@@ -191,7 +209,9 @@ const ProductCard = ({ product }) => {
                     key={idx}
                     onClick={() => setSelectedImage(img)}
                     className={`relative w-20 md:w-full aspect-[3/4] shrink-0 bg-gray-50 overflow-hidden transition-all duration-300 ${
-                      displayImage === img ? "ring-1 ring-gray-900 ring-offset-2" : "opacity-60 hover:opacity-100"
+                      displayImage === img
+                        ? "ring-1 ring-gray-900 ring-offset-2"
+                        : "opacity-60 hover:opacity-100"
                     }`}
                   >
                     <img
@@ -206,7 +226,7 @@ const ProductCard = ({ product }) => {
             )}
 
             {/* Main Image */}
-            <div 
+            <div
               className="relative w-full bg-gray-50 aspect-[3/4] overflow-hidden group cursor-zoom-in"
               onClick={() => {
                 setModalImage(displayImage);
@@ -242,7 +262,6 @@ const ProductCard = ({ product }) => {
           {/* Right Column - Product Details */}
           <div className="w-full lg:w-1/2 lg:py-8 lg:pr-8">
             <div className="max-w-md">
-              
               {/* Brand & Share */}
               <div className="flex items-center justify-between mb-4">
                 {brand && (
@@ -275,15 +294,22 @@ const ProductCard = ({ product }) => {
                 <div className="mb-8">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs font-semibold tracking-widest uppercase text-gray-900">
-                      Color: <span className="text-gray-500 ml-1">{selectedColor}</span>
+                      Color:{" "}
+                      <span className="text-gray-500 ml-1">
+                        {selectedColor}
+                      </span>
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-3">
                     {uniqueColors.map((color, idx) => {
                       const variantsWithColor = ProductVariants.filter((v) =>
-                        Array.isArray(v.color) ? v.color.includes(color) : v.color === color
+                        Array.isArray(v.color)
+                          ? v.color.includes(color)
+                          : v.color === color,
                       );
-                      const isOutOfStock = !variantsWithColor.some((v) => v.stock > 0);
+                      const isOutOfStock = !variantsWithColor.some(
+                        (v) => v.stock > 0,
+                      );
                       const isSelected = selectedColor === color;
 
                       return (
@@ -292,9 +318,13 @@ const ProductCard = ({ product }) => {
                           disabled={isOutOfStock}
                           title={`${color}${isOutOfStock ? " (Out of Stock)" : ""}`}
                           onClick={() => {
-                            let variant = variantsWithColor.find((v) => v.size === selectedVariant?.size);
+                            let variant = variantsWithColor.find(
+                              (v) => v.size === selectedVariant?.size,
+                            );
                             if (!variant || variant.stock <= 0) {
-                              variant = variantsWithColor.find((v) => v.stock > 0) || variantsWithColor[0];
+                              variant =
+                                variantsWithColor.find((v) => v.stock > 0) ||
+                                variantsWithColor[0];
                             }
                             if (variant) {
                               setSelectedVariant(variant);
@@ -320,7 +350,10 @@ const ProductCard = ({ product }) => {
                 <div className="mb-10">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs font-semibold tracking-widest uppercase text-gray-900">
-                      Size: <span className="text-gray-500 ml-1">{selectedVariant?.size}</span>
+                      Size:{" "}
+                      <span className="text-gray-500 ml-1">
+                        {selectedVariant?.size}
+                      </span>
                     </span>
                     {selectedSizeChart && (
                       <button
@@ -334,7 +367,11 @@ const ProductCard = ({ product }) => {
                   <div className="flex flex-wrap gap-3">
                     {memoryOptions.map((memory, idx) => {
                       const variant = ProductVariants.find(
-                        (v) => v.size === memory && (Array.isArray(v.color) ? v.color.includes(selectedColor) : v.color === selectedColor)
+                        (v) =>
+                          v.size === memory &&
+                          (Array.isArray(v.color)
+                            ? v.color.includes(selectedColor)
+                            : v.color === selectedColor),
                       );
                       const isOutOfStock = !variant || variant.stock <= 0;
                       const isSelected = selectedVariant?.size === memory;
@@ -348,10 +385,18 @@ const ProductCard = ({ product }) => {
                             if (variant) {
                               setSelectedVariant(variant);
                             } else {
-                              const anyVariant = ProductVariants.find((v) => v.size === memory && v.stock > 0) || ProductVariants.find((v) => v.size === memory);
+                              const anyVariant =
+                                ProductVariants.find(
+                                  (v) => v.size === memory && v.stock > 0,
+                                ) ||
+                                ProductVariants.find((v) => v.size === memory);
                               if (anyVariant) {
                                 setSelectedVariant(anyVariant);
-                                setSelectedColor(Array.isArray(anyVariant.color) ? anyVariant.color[0] : anyVariant.color);
+                                setSelectedColor(
+                                  Array.isArray(anyVariant.color)
+                                    ? anyVariant.color[0]
+                                    : anyVariant.color,
+                                );
                               }
                             }
                           }}
@@ -372,7 +417,7 @@ const ProductCard = ({ product }) => {
               {/* Add to Cart Section */}
               <div className="flex flex-col sm:flex-row gap-4 mb-12">
                 {/* Quantity */}
-                <div className="flex items-center border border-gray-200 h-14">
+                <div className="flex items-center border border-gray-200 h-14 w-max">
                   <button
                     onClick={handleDecrement}
                     disabled={quantity <= 1}
@@ -385,7 +430,9 @@ const ProductCard = ({ product }) => {
                   </span>
                   <button
                     onClick={handleIncrement}
-                    disabled={selectedVariant && quantity >= selectedVariant.stock}
+                    disabled={
+                      selectedVariant && quantity >= selectedVariant.stock
+                    }
                     className="w-12 h-full flex items-center justify-center text-gray-500 hover:text-gray-900 disabled:opacity-30 transition-colors"
                   >
                     <Plus size={16} strokeWidth={1.5} />
@@ -393,20 +440,21 @@ const ProductCard = ({ product }) => {
                 </div>
 
                 {/* Add Button */}
-                <button 
-                  className="flex-1 h-14 bg-gray-900 hover:bg-primary text-white text-xs font-semibold tracking-[0.15em] uppercase transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full sm:flex-1 h-14 bg-gray-900 hover:bg-primary text-white text-xs font-semibold tracking-[0.15em] uppercase transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={selectedVariant && selectedVariant.stock <= 0}
                 >
                   <ShoppingBag size={18} strokeWidth={1.5} />
-                  {selectedVariant && selectedVariant.stock <= 0 ? "Out of Stock" : "Add to Cart"}
+                  {selectedVariant && selectedVariant.stock <= 0
+                    ? "Out of Stock"
+                    : "Add to Cart"}
                 </button>
               </div>
 
-
-
               <div className="text-sm text-gray-600 font-light leading-relaxed min-h-[100px]">
                 <AnimatePresence mode="wait">
-                  {activeTab === 'details' && (
+                  {activeTab === "details" && (
                     <motion.div
                       key="details"
                       initial={{ opacity: 0, y: 10 }}
@@ -414,10 +462,12 @@ const ProductCard = ({ product }) => {
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <p className="whitespace-pre-line">{description || "No description provided."}</p>
+                      <p className="whitespace-pre-line">
+                        {description || "No description provided."}
+                      </p>
                     </motion.div>
                   )}
-                  {activeTab === 'shipping' && (
+                  {activeTab === "shipping" && (
                     <motion.div
                       key="shipping"
                       initial={{ opacity: 0, y: 10 }}
@@ -426,12 +476,13 @@ const ProductCard = ({ product }) => {
                       transition={{ duration: 0.3 }}
                       className="space-y-4"
                     >
-                      <p><strong>Standard Shipping:</strong> 3-5 business days.</p>
+                      <p>
+                        <strong>Standard Shipping:</strong> 3-5 business days.
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-
             </div>
           </div>
         </div>

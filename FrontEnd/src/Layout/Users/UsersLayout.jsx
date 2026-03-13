@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import UserTopBar from "./UserTopBar";
 import Footer from "./Footer";
+import CartDrawer from "../../components/Users/Cart/CartDrawer";
 
 const UsersLayout = () => {
   // This layout provides the main structure for all user-facing pages.
@@ -14,6 +15,7 @@ const UsersLayout = () => {
         </div>
       </main>
       <Footer />
+      <CartDrawer />
     </div>
   );
 };

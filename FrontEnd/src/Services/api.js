@@ -54,13 +54,13 @@ export const uploadsizeChartImage = (imageData) =>
     },
   });
 
-/*////////////////////
+/*//==============
 Auth
 ///////////////*/
 export const login = (credentials) =>
   apiClient.post("/auth/login", credentials);
 
-/*////////////////////
+/*//==============
 Users
 ///////////////*/
 export const getUsers = () => apiClient.get("/users");
@@ -70,7 +70,7 @@ export const updateUser = (userId, userData) =>
   apiClient.put(`/users/${userId}`, userData);
 export const deleteUser = (userId) => apiClient.delete(`/users/${userId}`);
 
-/*////////////////////
+/*//==============
 Profiles
 ///////////////*/
 export const getProfiles = () => apiClient.get("/profiles");
@@ -81,7 +81,7 @@ export const updateProfile = (profileId, profileData) =>
 export const deleteProfile = (profileId) =>
   apiClient.delete(`/profiles/${profileId}`);
 
-/*////////////////////
+/*//==============
 Employees
 ///////////////*/
 
