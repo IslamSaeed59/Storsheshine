@@ -12,7 +12,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 
-const PRODUCTS_PER_PAGE = 50;
+const PRODUCTS_PER_PAGE = 20;
 
 const UserProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();

@@ -9,7 +9,15 @@ import {
   getCategories,
 } from "../../../Services/api";
 import Header from "../../../Layout/Admin/Header";
-import { Edit, Trash2, Eye, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Eye,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -18,7 +26,7 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
+  const itemsPerPage = 20;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -108,12 +116,25 @@ const Products = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
         <div className="relative mb-6">
           <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse blur-md"></div>
-          <img src="/Logo1.png" alt="Loading" className="relative w-24 h-auto animate-bounce duration-1000" />
+          <img
+            src="/Logo1.png"
+            alt="Loading"
+            className="relative w-24 h-auto animate-bounce duration-1000"
+          />
         </div>
         <div className="flex justify-center gap-2">
-          <div className="w-2 h-2 bg-gray-900 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
-          <div className="w-2 h-2 bg-gray-900 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-          <div className="w-2 h-2 bg-gray-900 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+          <div
+            className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
+            style={{ animationDelay: "0s" }}
+          ></div>
+          <div
+            className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
+            style={{ animationDelay: "0.2s" }}
+          ></div>
+          <div
+            className="w-2 h-2 bg-gray-900 rounded-full animate-bounce"
+            style={{ animationDelay: "0.4s" }}
+          ></div>
         </div>
       </div>
     );
@@ -137,7 +158,6 @@ const Products = () => {
 
       {/* Filters Section */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-        
         {/* Search Input */}
         <div className="relative w-full md:w-96 group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -155,7 +175,7 @@ const Products = () => {
         {/* Category Filter */}
         <div className="relative w-full md:w-64 group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-             <Filter className="h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+            <Filter className="h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
           </div>
           <select
             value={selectedCategory}
@@ -183,19 +203,34 @@ const Products = () => {
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase"
+                >
                   Product Info
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase"
+                >
                   Category
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase"
+                >
                   Price
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase"
+                >
                   Date Added
                 </th>
-                <th scope="col" className="px-6 py-4 text-right text-[11px] font-bold tracking-wider text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-right text-[11px] font-bold tracking-wider text-gray-500 uppercase"
+                >
                   Actions
                 </th>
               </tr>
@@ -213,12 +248,17 @@ const Products = () => {
                         <div className="flex-shrink-0 h-14 w-10 bg-gray-50 rounded-md overflow-hidden ring-1 ring-gray-100">
                           {product.images ? (
                             <img
-                              src={Array.isArray(product.images) ? product.images[0] : product.images}
+                              src={
+                                Array.isArray(product.images)
+                                  ? product.images[0]
+                                  : product.images
+                              }
                               className="h-full w-full object-cover"
                               alt={product.name}
                               onError={(e) => {
                                 e.target.style.display = "none";
-                                e.target.parentElement.innerHTML = '<div class="h-full w-full flex items-center justify-center text-gray-300 bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>';
+                                e.target.parentElement.innerHTML =
+                                  '<div class="h-full w-full flex items-center justify-center text-gray-300 bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>';
                               }}
                             />
                           ) : (
@@ -240,7 +280,7 @@ const Products = () => {
                               </span>
                             )}
                             {product.isBestseller && (
-                               <span className="inline-flex items-center gap-1 rounded bg-yellow-50 px-1.5 py-0.5 text-[10px] font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
+                              <span className="inline-flex items-center gap-1 rounded bg-yellow-50 px-1.5 py-0.5 text-[10px] font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
                                 Best
                               </span>
                             )}
@@ -248,41 +288,49 @@ const Products = () => {
                         </div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                         {product.Category?.name || "Uncategorized"}
                       </span>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="font-semibold text-gray-900">
                           EGP {parseFloat(product.basePrice).toFixed(2)}
                         </span>
                         {product.discount > 0 && (
-                          <span className="text-xs text-primary font-medium">-{product.discount}% Sale</span>
+                          <span className="text-xs text-primary font-medium">
+                            -{product.discount}% Sale
+                          </span>
                         )}
                       </div>
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-gray-500 text-xs">
                       {new Date(product.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric", month: "short", day: "numeric"
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
                       })}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => navigate(`/admin/product/${product._id}`)}
+                          onClick={() =>
+                            navigate(`/admin/product/${product._id}`)
+                          }
                           className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye size={16} strokeWidth={2} />
                         </button>
                         <button
-                          onClick={() => navigate(`/admin/products/update/${product._id}`)}
+                          onClick={() =>
+                            navigate(`/admin/products/update/${product._id}`)
+                          }
                           className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Edit"
                         >
@@ -306,9 +354,12 @@ const Products = () => {
                       <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                         <Search className="h-8 w-8 text-gray-300" />
                       </div>
-                      <h3 className="text-sm font-semibold text-gray-900 mb-1">No products found</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                        No products found
+                      </h3>
                       <p className="text-xs text-gray-500 max-w-sm">
-                        We couldn't find any products matching your current search or category filters.
+                        We couldn't find any products matching your current
+                        search or category filters.
                       </p>
                     </div>
                   </td>
@@ -324,15 +375,20 @@ const Products = () => {
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{" "}
+                  Showing{" "}
+                  <span className="font-medium">{indexOfFirstItem + 1}</span> to{" "}
                   <span className="font-medium">
                     {Math.min(indexOfLastItem, products.length)}
                   </span>{" "}
-                  of <span className="font-medium">{products.length}</span> results
+                  of <span className="font-medium">{products.length}</span>{" "}
+                  results
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
                   <button
                     onClick={() => paginate(currentPage - 1)}
                     disabled={currentPage === 1}
@@ -341,35 +397,44 @@ const Products = () => {
                     <span className="sr-only">Previous</span>
                     <ChevronLeft className="h-5 w-5" aria-hidden="true" />
                   </button>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => {
-                     // Simple logic to show current, first, last, and immediate neighbors
-                     if (
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (number) => {
+                      // Simple logic to show current, first, last, and immediate neighbors
+                      if (
                         number === 1 ||
                         number === totalPages ||
                         (number >= currentPage - 1 && number <= currentPage + 1)
-                     ) {
-                       return (
-                         <button
-                           key={number}
-                           onClick={() => paginate(number)}
-                           className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                             currentPage === number
-                               ? "z-10 bg-primary/10 border-primary text-primary"
-                               : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                           }`}
-                         >
-                           {number}
-                         </button>
-                       );
-                     } else if (
+                      ) {
+                        return (
+                          <button
+                            key={number}
+                            onClick={() => paginate(number)}
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                              currentPage === number
+                                ? "z-10 bg-primary/10 border-primary text-primary"
+                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                            }`}
+                          >
+                            {number}
+                          </button>
+                        );
+                      } else if (
                         number === currentPage - 2 ||
                         number === currentPage + 2
-                     ) {
-                        return <span key={number} className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
-                     }
-                     return null;
-                  })}
+                      ) {
+                        return (
+                          <span
+                            key={number}
+                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+                          >
+                            ...
+                          </span>
+                        );
+                      }
+                      return null;
+                    },
+                  )}
 
                   <button
                     onClick={() => paginate(currentPage + 1)}
@@ -383,25 +448,25 @@ const Products = () => {
               </div>
             </div>
             {/* Mobile Pagination */}
-             <div className="flex items-center justify-between sm:hidden w-full">
-               <button
-                 onClick={() => paginate(currentPage - 1)}
-                 disabled={currentPage === 1}
-                 className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-               >
-                 Previous
-               </button>
-               <span className="text-sm text-gray-700">
-                 Page {currentPage} of {totalPages}
-               </span>
-               <button
-                 onClick={() => paginate(currentPage + 1)}
-                 disabled={currentPage === totalPages}
-                 className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-               >
-                 Next
-               </button>
-             </div>
+            <div className="flex items-center justify-between sm:hidden w-full">
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
