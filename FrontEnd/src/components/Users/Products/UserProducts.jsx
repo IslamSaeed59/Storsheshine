@@ -17,11 +17,9 @@ const PRODUCTS_PER_PAGE = 20;
 const UserProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [initialFilterApplied, setInitialFilterApplied] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,25 +45,14 @@ const UserProducts = () => {
 
     if (hasInitialFilters) {
       setActiveFilters(initialFilters);
-      setInitialFilterApplied(true);
-      fetchAllAndFilter(initialFilters);
+      fetchProducts(1, initialFilters);
     } else {
-      setInitialFilterApplied(true);
-      fetchProducts(1);
+      fetchProducts(1, {});
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (!initialFilterApplied) return;
-
-    const hasFilters = Object.keys(activeFilters).some(
-      (key) => activeFilters[key],
-    );
-
-    if (!hasFilters) {
-      fetchProducts(currentPage);
-    }
-  }, [currentPage]);
+  // The page change data-fetching is now fully handled by `handlePageChange` directly.
 
   const syncFiltersToUrl = (filters) => {
     const params = new URLSearchParams();
@@ -78,16 +65,23 @@ const UserProducts = () => {
     setSearchParams(params, { replace: true });
   };
 
-  const fetchProducts = async (page = 1) => {
+  const fetchProducts = async (page = 1, currentFilters = activeFilters) => {
     setLoading(true);
     try {
-      const params = { page, limit };
+      // Map categoryId to category for the backend API
+      const apiFilters = { ...currentFilters };
+      if (apiFilters.categoryId) {
+        apiFilters.category = apiFilters.categoryId;
+        delete apiFilters.categoryId;
+      }
+      
+      const params = { page, limit, ...apiFilters };
+      
       const response = await getProducts(params);
       const fetchedProducts = response.data.products || [];
       const pagination = response.data.pagination || {};
 
       setProducts(fetchedProducts);
-      setFilteredProducts(fetchedProducts);
       setTotalPages(pagination.totalPages || 1);
       setTotalProducts(pagination.totalProducts || fetchedProducts.length);
       setCurrentPage(pagination.currentPage || 1);
@@ -98,136 +92,24 @@ const UserProducts = () => {
     }
   };
 
-  const applyFilters = (filters, productList = products) => {
-    let result = [...productList];
-
-    if (filters.categoryId) {
-      const targetIds = [String(filters.categoryId)];
-      if (filters.subCategories) {
-        targetIds.push(...filters.subCategories.split(","));
-      }
-      result = result.filter((p) => {
-        const pCategoryId = String(p.Category?._id);
-        return targetIds.includes(pCategoryId);
-      });
-    }
-
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(searchLower) ||
-          p.brand?.toLowerCase().includes(searchLower) ||
-          p.description?.toLowerCase().includes(searchLower),
-      );
-    }
-
-    if (filters.minPrice && !isNaN(parseFloat(filters.minPrice))) {
-      result = result.filter(
-        (p) => parseFloat(p.basePrice) >= parseFloat(filters.minPrice),
-      );
-    }
-
-    if (filters.maxPrice && !isNaN(parseFloat(filters.maxPrice))) {
-      result = result.filter(
-        (p) => parseFloat(p.basePrice) <= parseFloat(filters.maxPrice),
-      );
-    }
-
-    setTotalProducts(result.length);
-    setTotalPages(Math.ceil(result.length / limit) || 1);
-
-    const startIndex = (currentPage - 1) * limit;
-    const paginatedResult = result.slice(startIndex, startIndex + limit);
-
-    setFilteredProducts(paginatedResult);
-  };
-
   const handleFilterChange = (filters) => {
     setActiveFilters(filters);
     setCurrentPage(1);
     syncFiltersToUrl(filters);
-
-    const hasFilters = Object.keys(filters).some((key) => filters[key]);
-
-    if (hasFilters) {
-      fetchAllAndFilter(filters);
-    } else {
-      fetchProducts(1);
-    }
-  };
-
-  const fetchAllAndFilter = async (filters) => {
-    setLoading(true);
-    try {
-      const response = await getProducts();
-      const allProducts = response.data.products || [];
-      setProducts(allProducts);
-      applyFilters(filters, allProducts);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
+    fetchProducts(1, filters);
   };
 
   const clearFilters = () => {
     setActiveFilters({});
     setCurrentPage(1);
     setSearchParams({}, { replace: true });
-    fetchProducts(1);
+    fetchProducts(1, {});
   };
 
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
-
-    const hasFilters = Object.keys(activeFilters).some(
-      (key) => activeFilters[key],
-    );
-
-    if (hasFilters) {
-      const startIndex = (page - 1) * limit;
-      let result = [...products];
-
-      if (activeFilters.categoryId) {
-        const targetIds = [String(activeFilters.categoryId)];
-        if (activeFilters.subCategories) {
-          targetIds.push(...activeFilters.subCategories.split(","));
-        }
-        result = result.filter((p) =>
-          targetIds.includes(String(p.Category?._id)),
-        );
-      }
-      if (activeFilters.search) {
-        const searchLower = activeFilters.search.toLowerCase();
-        result = result.filter(
-          (p) =>
-            p.name?.toLowerCase().includes(searchLower) ||
-            p.brand?.toLowerCase().includes(searchLower) ||
-            p.description?.toLowerCase().includes(searchLower),
-        );
-      }
-      if (
-        activeFilters.minPrice &&
-        !isNaN(parseFloat(activeFilters.minPrice))
-      ) {
-        result = result.filter(
-          (p) => parseFloat(p.basePrice) >= parseFloat(activeFilters.minPrice),
-        );
-      }
-      if (
-        activeFilters.maxPrice &&
-        !isNaN(parseFloat(activeFilters.maxPrice))
-      ) {
-        result = result.filter(
-          (p) => parseFloat(p.basePrice) <= parseFloat(activeFilters.maxPrice),
-        );
-      }
-
-      setFilteredProducts(result.slice(startIndex, startIndex + limit));
-    }
-
+    fetchProducts(page, activeFilters);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -339,7 +221,7 @@ const UserProducts = () => {
             </div>
           ) : (
             <>
-              <ProductsGrid products={filteredProducts} />
+              <ProductsGrid products={products} />
 
               {totalPages > 1 && (
                 <div className="mt-16 flex justify-center border-t border-gray-100 pt-10 pb-16">

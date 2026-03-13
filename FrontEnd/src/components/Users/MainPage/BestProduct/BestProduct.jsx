@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Plus, Minus, ArrowRight } from "lucide-react";
-import { getProducts } from "../../../../Services/api";
+import { getFeaturedProducts } from "../../../../Services/api";
 import { useNavigate } from "react-router-dom";
 
 const BestProduct = () => {
@@ -12,9 +12,11 @@ const BestProduct = () => {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const response = await getProducts();
-        const featured = (response.data.products || []).find((item) => item.isFeatured);
-        setProduct(featured);
+        const response = await getFeaturedProducts();
+        // The API returns an array. We'll pick the first one for the main banner.
+        if (response.data && response.data.length > 0) {
+           setProduct(response.data[0]);
+        }
       } catch (error) {
         console.error("Error fetching featured product:", error);
       }

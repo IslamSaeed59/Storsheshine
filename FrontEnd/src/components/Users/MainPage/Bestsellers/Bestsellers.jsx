@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { ArrowLeft, ArrowRight, ShoppingBag } from "lucide-react";
-import { getProducts } from "../../../../Services/api";
+import { getBestsellerProducts } from "../../../../Services/api";
 import { useNavigate } from "react-router-dom";
 
 const Bestsellers = ({ offerData }) => {
@@ -18,9 +18,8 @@ const Bestsellers = ({ offerData }) => {
   useEffect(() => {
     const fetchBestsellers = async () => {
       try {
-        const response = await getProducts();
-        const filtered = (response.data.products || []).filter((item) => item.isBestseller);
-        setBestsellers(filtered); // Removed .slice(0, 4) to show all products
+        const response = await getBestsellerProducts();
+        setBestsellers(response.data || []); 
       } catch (error) {
         console.error("Error fetching bestsellers:", error);
       }

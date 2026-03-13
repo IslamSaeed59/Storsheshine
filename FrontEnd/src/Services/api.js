@@ -114,6 +114,10 @@ export const searchProducts = (query) =>
 export const getProductsByCategory = (categoryId) =>
   apiClient.get(`products/smiller/${categoryId}`);
 
+export const getBestsellerProducts = () =>
+  apiClient.get("/products/bestsellers");
+export const getFeaturedProducts = () => apiClient.get("/products/featured");
+
 // ==========================
 // Category CRUD
 // ==========================

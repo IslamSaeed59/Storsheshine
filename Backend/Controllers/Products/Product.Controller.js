@@ -70,15 +70,29 @@ exports.createProduct = asyncHandler(async (req, res) => {
 });
 
 exports.getProducts = asyncHandler(async (req, res) => {
-  const { page, limit, search, category } = req.query;
+  const { page, limit, search, category, subCategories, minPrice, maxPrice } = req.query;
 
   const query = {};
   if (search) {
     const regex = new RegExp(search, "i");
     query.$or = [{ name: regex }, { description: regex }];
   }
-  if (category) {
-    query.categoryId = category;
+  
+  if (category || subCategories) {
+    const targetIds = [];
+    if (category) targetIds.push(category);
+    if (subCategories) {
+      targetIds.push(...subCategories.split(','));
+    }
+    if (targetIds.length > 0) {
+      query.categoryId = { $in: targetIds };
+    }
+  }
+
+  if (minPrice || maxPrice) {
+    query.basePrice = {};
+    if (minPrice && !isNaN(parseFloat(minPrice))) query.basePrice.$gte = parseFloat(minPrice);
+    if (maxPrice && !isNaN(parseFloat(maxPrice))) query.basePrice.$lte = parseFloat(maxPrice);
   }
 
   // If pagination params are provided, paginate; otherwise return all
@@ -97,13 +111,17 @@ exports.getProducts = asyncHandler(async (req, res) => {
     currentPage = pageNum;
 
     products = await Product.find(query)
-      .populate("categoryId")
+      .select("_id name isBestseller images discount basePrice categoryId")
+      .populate("categoryId", "name parentId")
       .sort({ name: 1 }) // Sort A to Z (ascending)
       .skip(skip)
       .limit(limitNum);
   } else {
     // No pagination → return ALL products sorted A to Z
-    products = await Product.find(query).populate("categoryId").sort({ name: 1 }); // Sort A to Z (ascending)
+    products = await Product.find(query)
+      .select("_id name isBestseller images discount basePrice categoryId")
+      .populate("categoryId", "name parentId")
+      .sort({ name: 1 }); // Sort A to Z (ascending)
     totalProducts = products.length;
     totalPages = 1;
     currentPage = 1;
@@ -111,7 +129,7 @@ exports.getProducts = asyncHandler(async (req, res) => {
 
   const productsWithData = await Promise.all(
     products.map(async (product) => {
-      const variants = await ProductVariant.find({ productId: product._id });
+      const variants = await ProductVariant.find({ productId: product._id }).select("size");
       const p = product.toObject();
       return {
         ...p,
@@ -400,4 +418,48 @@ exports.getProductsByCategory = asyncHandler(async (req, res) => {
   );
 
   res.json(productsWithStock);
+});
+
+exports.getBestsellerProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({ isBestseller: true })
+    .select("_id name isBestseller images discount basePrice categoryId")
+    .populate("categoryId", "name parentId")
+    .sort({ createdAt: -1 })
+    .limit(10); // Optionally limit the amount of featured items returned by default
+
+  const productsWithData = await Promise.all(
+    products.map(async (product) => {
+      const variants = await ProductVariant.find({ productId: product._id }).select("size");
+      const p = product.toObject();
+      return {
+        ...p,
+        Category: p.categoryId,
+        ProductVariants: variants,
+      };
+    }),
+  );
+
+  res.json(productsWithData);
+});
+
+exports.getFeaturedProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({ isFeatured: true })
+    .select("_id name isBestseller images discount basePrice categoryId")
+    .populate("categoryId", "name parentId")
+    .sort({ createdAt: -1 })
+    .limit(10);
+
+  const productsWithData = await Promise.all(
+    products.map(async (product) => {
+      const variants = await ProductVariant.find({ productId: product._id }).select("size");
+      const p = product.toObject();
+      return {
+        ...p,
+        Category: p.categoryId,
+        ProductVariants: variants,
+      };
+    }),
+  );
+
+  res.json(productsWithData);
 });
