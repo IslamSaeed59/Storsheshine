@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { X, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
+import {
+  X,
+  Minus,
+  Plus,
+  ShoppingBag,
+  ArrowRight,
+  Instagram,
+  Facebook,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -297,22 +305,34 @@ const CartDrawer = () => {
                 </p>
                 <ol className="list-decimal pl-4 space-y-2">
                   <li>Please take a screenshot of your full cart.</li>
-                  <li>Send the screenshot to us via Instagram DM.</li>
                   <li>
-                    Click the link below to go to our Instagram page and send
-                    the message.
+                    Click one of the links below to visit our Instagram or
+                    Facebook page.
                   </li>
+                  <li>Send us the screenshot via DM to complete your order.</li>
                 </ol>
               </div>
 
-              <a
-                href="https://ig.me/m/sheshine_o"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full h-12 bg-[#E1306C] hover:bg-[#C13584] text-white flex items-center justify-center gap-2 font-medium tracking-wide transition-colors"
-              >
-                Go to Instagram
-              </a>
+              <div className="flex flex-col gap-3">
+                <a
+                  href="https://ig.me/m/sheshine_o"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-12 bg-[#E1306C] hover:bg-[#C13584] text-white flex items-center justify-center gap-2 font-medium tracking-wide transition-colors"
+                >
+                  <Instagram size={20} />
+                  Message on Instagram
+                </a>
+                <a
+                  href="https://www.facebook.com/groups/439867414711089/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-12 bg-[#1877F2] hover:bg-[#166FE5] text-white flex items-center justify-center gap-2 font-medium tracking-wide transition-colors"
+                >
+                  <Facebook size={20} />
+                  Message on Facebook
+                </a>
+              </div>
             </motion.div>
           </div>
         )}
