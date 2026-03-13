@@ -118,6 +118,15 @@ const ProductCard = ({ product }) => {
 
   const originalPrice = priceValue.toFixed(2);
 
+  // Size display order and label mapping
+  const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL"];
+
+  const getSizeLabel = (size) => {
+    const sizeUpper = String(size).toUpperCase().trim();
+    const match = SIZE_ORDER.find((s) => s === sizeUpper);
+    return match || size; // fallback to original value if not in the list
+  };
+
   // Extract unique sizes/memories from variants
   const memoryOptions = ProductVariants
     ? [
@@ -126,7 +135,14 @@ const ProductCard = ({ product }) => {
             (s) => s != null && s !== "" && s !== "NoSize",
           ),
         ),
-      ]
+      ].sort((a, b) => {
+        const idxA = SIZE_ORDER.indexOf(String(a).toUpperCase().trim());
+        const idxB = SIZE_ORDER.indexOf(String(b).toUpperCase().trim());
+        if (idxA === -1 && idxB === -1) return 0;
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
+      })
     : [];
 
   const uniqueColors = ProductVariants
@@ -352,7 +368,7 @@ const ProductCard = ({ product }) => {
                     <span className="text-xs font-semibold tracking-widest uppercase text-gray-900">
                       Size:{" "}
                       <span className="text-gray-500 ml-1">
-                        {selectedVariant?.size}
+                        {selectedVariant?.size ? getSizeLabel(selectedVariant.size) : ''}
                       </span>
                     </span>
                     {selectedSizeChart && (
@@ -406,7 +422,7 @@ const ProductCard = ({ product }) => {
                             ${isOutOfStock ? "opacity-30 cursor-not-allowed line-through relative after:absolute after:w-full after:h-px after:bg-gray-400 after:-rotate-45" : ""}
                           `}
                         >
-                          {memory}
+                          {getSizeLabel(memory)}
                         </button>
                       );
                     })}
