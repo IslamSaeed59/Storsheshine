@@ -631,7 +631,7 @@ const UpdateProduct = () => {
                           </label>
                           <div className="flex items-center gap-4">
                             {(sizeChartFiles[index] || variant.sizeChart) && (
-                              <div className="w-12 h-16 rounded border border-gray-200 overflow-hidden bg-white shadow-sm shrink-0">
+                              <div className="relative w-12 h-16 rounded border border-gray-200 overflow-hidden bg-white shadow-sm shrink-0 group/img">
                                 <img
                                   src={
                                     sizeChartFiles[index]
@@ -641,6 +641,22 @@ const UpdateProduct = () => {
                                   alt="Size Chart"
                                   className="w-full h-full object-cover"
                                 />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSizeChartFiles((prev) => {
+                                      const updated = { ...prev };
+                                      delete updated[index];
+                                      return updated;
+                                    });
+                                    const newVariants = [...variants];
+                                    newVariants[index].sizeChart = "";
+                                    setVariants(newVariants);
+                                  }}
+                                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/img:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
+                                >
+                                  <X size={10} strokeWidth={3} />
+                                </button>
                               </div>
                             )}
                             <input
@@ -661,7 +677,7 @@ const UpdateProduct = () => {
                           </label>
                           <div className="flex items-center gap-4">
                             {(variantImageFiles[index] || variant.imageVariant) && (
-                              <div className="w-12 h-16 rounded border border-gray-200 overflow-hidden bg-white shadow-sm shrink-0">
+                              <div className="relative w-12 h-16 rounded border border-gray-200 overflow-hidden bg-white shadow-sm shrink-0 group/img">
                                 <img
                                   src={
                                     variantImageFiles[index]
@@ -671,6 +687,22 @@ const UpdateProduct = () => {
                                   alt="Variant Image"
                                   className="w-full h-full object-cover"
                                 />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setVariantImageFiles((prev) => {
+                                      const updated = { ...prev };
+                                      delete updated[index];
+                                      return updated;
+                                    });
+                                    const newVariants = [...variants];
+                                    newVariants[index].imageVariant = "";
+                                    setVariants(newVariants);
+                                  }}
+                                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/img:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
+                                >
+                                  <X size={10} strokeWidth={3} />
+                                </button>
                               </div>
                             )}
                             <input
