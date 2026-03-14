@@ -181,17 +181,16 @@ const ProductCard = () => {
 
   const handleCreateVariant = async (e) => {
     e.preventDefault();
-    if (!imageFile) {
-      toast.error("Please upload a product image");
-      return;
-    }
 
     setSubmitting(true);
     try {
-      const imageUrl = await handleImageUpload();
-      if (!imageUrl) {
-        setSubmitting(false);
-        return;
+      let imageUrl = "";
+      if (imageFile) {
+        imageUrl = await handleImageUpload();
+        if (!imageUrl) {
+          setSubmitting(false);
+          return;
+        }
       }
 
       let sizeChartUrl = "";
@@ -523,7 +522,10 @@ const ProductCard = () => {
                   </div>
                   <div className="col-span-1 sm:col-span-2 lg:col-span-2">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                      Variant Image <span className="text-red-500">*</span>
+                      Variant Image{" "}
+                      <span className="text-gray-400 font-normal normal-case">
+                        (Optional)
+                      </span>
                     </label>
 
                     {!imagePreview ? (
