@@ -2,8 +2,7 @@ import React from "react";
 import { Heart, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { optimizeCloudinaryUrl } from "../../../utils/cloudinaryParams";
-
+import OptimizedImage from "../../common/OptimizedImage";
 const ProductsGrid = ({ products }) => {
   const navigate = useNavigate();
 
@@ -48,28 +47,25 @@ const ProductsGrid = ({ products }) => {
         >
           {/* Image Container */}
           <div className="relative aspect-[3/4] mb-6 bg-gray-50 overflow-hidden group">
-            <img
-              src={optimizeCloudinaryUrl(
+            <OptimizedImage
+              src={
                 (Array.isArray(product.images)
                   ? product.images[0]
                   : product.images) ||
-                "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop",
-                { width: 400, quality: "auto" }
-              )}
+                "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop"
+              }
               alt={product.name}
               className={`w-full h-full object-cover object-center transition-transform duration-700 ${
                 Array.isArray(product.images) && product.images.length > 1
                   ? "group-hover:opacity-0"
                   : "group-hover:scale-105"
               }`}
-              loading="lazy"
             />
             {Array.isArray(product.images) && product.images.length > 1 && (
-              <img
-                src={optimizeCloudinaryUrl(product.images[1], { width: 400, quality: "auto" })}
+              <OptimizedImage
+                src={product.images[1]}
                 alt={product.name}
                 className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105"
-                loading="lazy"
               />
             )}
 

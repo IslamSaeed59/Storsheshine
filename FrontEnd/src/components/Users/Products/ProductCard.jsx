@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Info, Minus, Plus, X, Ruler, ShoppingBag } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "../../../context/CartContext";
+import { optimizeCloudinaryUrl } from "../../../utils/cloudinaryParams";
 
 const ProductCard = ({ product }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -231,7 +232,7 @@ const ProductCard = ({ product }) => {
                     }`}
                   >
                     <img
-                      src={img}
+                      src={optimizeCloudinaryUrl(img, { width: 150 })}
                       alt={`${name} thumbnail ${idx + 1}`}
                       className="w-full h-full object-cover"
                       loading="lazy"
@@ -268,7 +269,7 @@ const ProductCard = ({ product }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                src={displayImage}
+                src={optimizeCloudinaryUrl(displayImage, { width: 800 })}
                 alt={name}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
@@ -517,7 +518,7 @@ const ProductCard = ({ product }) => {
             <X size={24} />
           </button>
           <img
-            src={modalImage}
+            src={optimizeCloudinaryUrl(modalImage, { width: 1200, quality: "auto:best" })}
             alt="Product Preview"
             className="max-w-full max-h-[90vh] object-contain animate-in fade-in zoom-in duration-300"
             onClick={(e) => e.stopPropagation()}
@@ -548,7 +549,7 @@ const ProductCard = ({ product }) => {
             </div>
             <div className="p-8">
               <img
-                src={selectedSizeChart}
+                src={optimizeCloudinaryUrl(selectedSizeChart, { width: 800 })}
                 alt="Size Chart"
                 className="w-full h-auto object-contain"
                 onError={(e) => {

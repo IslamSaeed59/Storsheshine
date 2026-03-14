@@ -41,6 +41,10 @@ const uploadToCloudinary = (fileBuffer, folder, publicId) => {
         folder,
         public_id: publicId,
         resource_type: "image",
+        // Optimization: prevent duplicate bloat and strip metadata
+        unique_filename: true,
+        use_filename: false,
+        image_metadata: false, // Strips Exif data to save storage
       },
       (error, result) => {
         if (error) reject(error);

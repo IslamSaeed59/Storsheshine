@@ -11,15 +11,17 @@ export const optimizeCloudinaryUrl = (url, options = {}) => {
   if (!url.includes('res.cloudinary.com')) return url;
 
   const {
-    width = 600, // Default width
-    quality = 'auto', // Default quality
+    width = 'auto', // Changed to auto for responsive delivery
+    dpr = 'auto', // Dynamic pixel ratio
+    quality = 'auto:good', // Default quality
     format = 'auto', // Default format (webp/avif depending on browser)
-    crop = 'fill', // Default crop mode
+    crop = 'limit', // Default crop mode (limit to prevent upscaling)
   } = options;
 
   // Build transformation string
   const transformations = [];
   if (width) transformations.push(`w_${width}`);
+  if (dpr) transformations.push(`dpr_${dpr}`);
   if (crop) transformations.push(`c_${crop}`);
   if (quality) transformations.push(`q_${quality}`);
   if (format) transformations.push(`f_${format}`);

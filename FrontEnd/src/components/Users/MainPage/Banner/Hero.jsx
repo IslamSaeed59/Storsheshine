@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import OptimizedImage from "../../../common/OptimizedImage";
 
 // Default slides in case no data is fetched
 const defaultSlides = [
@@ -72,10 +73,11 @@ const Hero = ({ heroData }) => {
           transition={{ duration: 1.2, ease: [0.25, 0.8, 0.25, 1] }}
         >
           <div className="absolute inset-0 bg-black/40 z-10" />
-          <img
+          <OptimizedImage
             src={slides[currentIndex].src}
             alt={slides[currentIndex].title}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
+            style={{ position: 'absolute' }}
           />
         </motion.div>
       </AnimatePresence>
