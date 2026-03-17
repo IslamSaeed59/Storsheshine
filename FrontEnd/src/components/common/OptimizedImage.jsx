@@ -1,70 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
 
 /**
  * Optimized Cloudinary Image Component
- * Implements: f_auto, q_auto:eco, w_auto, dpr_auto, Lazy Loading, and Blur-up placeholding.
+ *
+ * Credit-saving strategy:
+ *  - No blurSrc: CSS skeleton replaces it, saving 50% of transformations.
+ *  - q_auto:eco: smaller files vs q_auto:good.
+ *  - Fixed srcset (400/800/1200): prevents endless w_auto variants.
+ *  - f_auto: serves WebP/AVIF automatically.
+ *  - Optional `crop` prop: callers can inject e.g. "c_fill,g_auto,ar_3:4"
+ *    for smart cropping without baking card-specific logic into this component.
+ *  - loading="lazy" + decoding="async": defers off-screen requests.
+ *  - Error fallback: broken URLs show a grey skeleton instead of a broken icon.
  */
-const OptimizedImage = ({ src, alt, className, style, sizes }) => {
+
+/** Cloudinary srcset breakpoints — keep short to limit transformation count. */
+const WIDTHS = [400, 800, 1200];
+
+/**
+ * Build a Cloudinary delivery URL.
+ * @param {string} src   - Original Cloudinary URL.
+ * @param {number} width - Target width for this srcset entry.
+ * @param {string} crop  - Optional extra transformation, e.g. "c_fill,g_auto,ar_3:4".
+ */
+function buildCloudinaryUrl(src, width, crop = "") {
+  const uploadIndex = src.indexOf("/upload/");
+  if (uploadIndex === -1) return src;
+
+  const beforeUpload = src.substring(0, uploadIndex + 8); // includes "/upload/"
+  const afterUpload = src.substring(uploadIndex + 8);
+
+  // Strip any pre-existing transformation block so we never stack transforms.
+  const cleanPath = afterUpload.replace(
+    /^(?:[a-z_0-9]+(?::[a-z_0-9.]+)?(?:,)?)+\//,
+    ""
+  );
+
+  const cropParam = crop ? `${crop},` : "";
+  return `${beforeUpload}${cropParam}f_auto,q_auto:eco,w_${width}/${cleanPath}`;
+}
+
+const OptimizedImage = ({ src, alt, className, style, sizes, crop }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [imgSrc, setImgSrc] = useState(null);
-  const [blurSrc, setBlurSrc] = useState(null);
+  const [hasError, setHasError] = useState(false);
 
-  useEffect(() => {
-    if (!src || !src.includes('res.cloudinary.com')) {
-      setImgSrc(src);
-      return;
-    }
+  const isCloudinary = src && src.includes("res.cloudinary.com");
 
-    const uploadIndex = src.indexOf('/upload/');
-    if (uploadIndex !== -1) {
-      const beforeUpload = src.substring(0, uploadIndex + 8);
-      const afterUpload = src.substring(uploadIndex + 8);
-      // Remove any existing transformations temporarily to apply our own
-      const cleanAfterUpload = afterUpload.replace(/^[a-z_0-9,]+(?:[:][a-z_0-9]+)?\//, '');
+  const srcSet = isCloudinary
+    ? WIDTHS.map((w) => `${buildCloudinaryUrl(src, w, crop)} ${w}w`).join(", ")
+    : undefined;
 
-      // 1. Full Resolution URL (w_auto, dpr_auto, f_auto, q_auto:good)
-      // Note: c_limit ensures we don't scale up past the original image size
-      const full = `${beforeUpload}f_auto,q_auto:good,w_auto,c_limit,dpr_auto/${cleanAfterUpload}`;
+  // Fallback src uses the middle breakpoint.
+  const resolvedSrc = isCloudinary ? buildCloudinaryUrl(src, 800, crop) : src;
 
-      // 2. Blur-Up URL (Ultra-low res, heavily blurred)
-      const blur = `${beforeUpload}w_20,f_auto,q_auto:eco,e_blur:1000/${cleanAfterUpload}`;
-
-      setImgSrc(full);
-      setBlurSrc(blur);
-    } else {
-      setImgSrc(src);
-    }
-  }, [src]);
+  if (!src || hasError) {
+    return (
+      <div
+        className={`bg-gray-200 animate-pulse ${className || ""}`}
+        style={style}
+        role="img"
+        aria-label={alt || "Image unavailable"}
+      />
+    );
+  }
 
   return (
-    <div 
-      className={`relative overflow-hidden ${className || ''}`} 
-      style={{ ...style, display: 'inline-block' }}
+    <div
+      className={`relative overflow-hidden ${className || ""}`}
+      style={style}
     >
-      {/* Blur-up Placeholder */}
-      {blurSrc && !isLoaded && (
-        <img
-          src={blurSrc}
-          alt={alt}
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 blur-md scale-110"
-          aria-hidden="true"
-        />
+      {/* Skeleton shown while image loads */}
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
       )}
 
-      {/* Main Image with Native Lazy Loading */}
-      {imgSrc && (
-        <img
-          src={imgSrc}
-          alt={alt}
-          sizes={sizes || "100vw"} // Important for w_auto to work natively
-          loading="lazy" // Defers loading until near the viewport
-          onLoad={() => setIsLoaded(true)}
-          className={`w-full h-full object-cover transition-opacity duration-700 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{ position: blurSrc && !isLoaded ? 'absolute' : 'relative' }}
-        />
-      )}
+      <img
+        src={resolvedSrc}
+        srcSet={srcSet}
+        sizes={
+          sizes ||
+          "(max-width: 640px) 400px, (max-width: 1024px) 800px, 1200px"
+        }
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setIsLoaded(true)}
+        onError={() => setHasError(true)}
+        className={`w-full h-full object-cover transition-opacity duration-700 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      />
     </div>
   );
 };

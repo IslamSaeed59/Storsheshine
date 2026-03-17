@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { Heart, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import OptimizedImage from "../../common/OptimizedImage";
+
+// Precise sizes value: prevents the browser from requesting a 1200px image
+// for a card that only occupies ~25vw of the viewport.
+const CARD_SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw";
+
+// Smart crop params applied to every product card image.
+// c_fill + g_auto + ar_3:4 → Cloudinary sends exactly the pixels needed,
+// no wasted bandwidth on uncropped whitespace.
+const CARD_CROP = "c_fill,g_auto,ar_3:4";
+
 const ProductsGrid = ({ products }) => {
   const navigate = useNavigate();
 
@@ -37,131 +47,175 @@ const ProductsGrid = ({ products }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
       {products.map((product, index) => (
-        <motion.div
+        <ProductCard
           key={product._id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.05 }}
-          className="group flex flex-col cursor-pointer"
-          onClick={() => handleViewDetails(product._id)}
-        >
-          {/* Image Container */}
-          <div className="relative aspect-[3/4] mb-6 bg-gray-50 overflow-hidden group">
-            <OptimizedImage
-              src={
-                (Array.isArray(product.images)
-                  ? product.images[0]
-                  : product.images) ||
-                "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop"
-              }
-              alt={product.name}
-              className={`w-full h-full object-cover object-center transition-transform duration-700 ${
-                Array.isArray(product.images) && product.images.length > 1
-                  ? "group-hover:opacity-0"
-                  : "group-hover:scale-105"
-              }`}
-            />
-            {Array.isArray(product.images) && product.images.length > 1 && (
-              <OptimizedImage
-                src={product.images[1]}
-                alt={product.name}
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105"
-              />
-            )}
-
-            {/* Badges */}
-            <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-              {product.discount > 0 && (
-                <span className="bg-primary text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
-                  Sale -{product.discount}%
-                </span>
-              )}
-              {product.isNew && (
-                <span className="bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
-                  New
-                </span>
-              )}
-            </div>
-
-            {/* Quick Add Overlay */}
-            <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-20">
-              <button
-                className="w-full bg-white/95 backdrop-blur-sm text-gray-900 font-medium tracking-wide uppercase text-xs py-4 flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewDetails(product._id);
-                }}
-              >
-                <ShoppingBag size={16} />
-                Quick View
-              </button>
-            </div>
-
-            {/* Wishlist Icon */}
-            <button
-              onClick={(e) => e.stopPropagation()}
-              className="absolute top-4 right-4 z-20 text-gray-400 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
-            >
-              <Heart size={20} />
-            </button>
-          </div>
-
-          {/* Product Info */}
-          <div className="text-center flex flex-col flex-grow">
-            {product.brand && (
-              <span className="text-[10px] font-semibold tracking-[0.2em] text-gray-400 uppercase mb-2">
-                {product.brand}
-              </span>
-            )}
-
-            <h3 className="text-lg font-serif font-medium text-gray-900 mb-2 px-2 hover:text-primary transition-colors truncate">
-              {product.name}
-            </h3>
-
-            {/* Sizes display */}
-            {product.ProductVariants && product.ProductVariants.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-1.5 mb-3 px-2">
-                {[
-                  ...new Set(
-                    product.ProductVariants.map((v) => v.size).filter(
-                      (s) => s && s !== "NoSize",
-                    ),
-                  ),
-                ].map((size, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[10px] sm:text-xs font-medium text-gray-500 border border-gray-200 px-2 py-0.5 whitespace-nowrap"
-                  >
-                    {size}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-auto flex items-center justify-center gap-3">
-              {product.discount > 0 ? (
-                <>
-                  <span className="text-sm text-gray-400 line-through">
-                    EGP {parseFloat(product.basePrice).toFixed(2)}
-                  </span>
-                  <span className="text-base font-medium text-primary">
-                    EGP{" "}
-                    {calculateDiscountedPrice(
-                      product.basePrice,
-                      product.discount,
-                    )}
-                  </span>
-                </>
-              ) : (
-                <span className="text-base font-medium text-gray-900">
-                  EGP {parseFloat(product.basePrice).toFixed(2)}
-                </span>
-              )}
-            </div>
-          </div>
-        </motion.div>
+          product={product}
+          index={index}
+          onViewDetails={handleViewDetails}
+          calculateDiscountedPrice={calculateDiscountedPrice}
+        />
       ))}
     </div>
+  );
+};
+
+// ─── Extracted ProductCard ────────────────────────────────────────────────────
+// Extracted into its own component so each card manages its own hover state
+// independently without causing the whole grid to re-render.
+const ProductCard = ({ product, index, onViewDetails, calculateDiscountedPrice }) => {
+  // hasHovered is intentionally one-way (false → true, never back).
+  // Once the hover image is mounted in the DOM it stays mounted,
+  // so subsequent hovers don't trigger a new Cloudinary request.
+  const [hasHovered, setHasHovered] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = useCallback(() => {
+    if (!hasHovered) setHasHovered(true); // lazy-mount only once
+    setIsHovered(true);
+  }, [hasHovered]);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+  }, []);
+
+  const primaryImage =
+    (Array.isArray(product.images) ? product.images[0] : product.images) ||
+    "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop";
+
+  const hoverImage =
+    Array.isArray(product.images) && product.images.length > 1
+      ? product.images[1]
+      : null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.05 }}
+      className="group flex flex-col cursor-pointer"
+      onClick={() => onViewDetails(product._id)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Image Container */}
+      <div className="relative aspect-[3/4] mb-6 bg-gray-50 overflow-hidden">
+        {/* Primary image — always rendered */}
+        <OptimizedImage
+          src={primaryImage}
+          alt={product.name}
+          sizes={CARD_SIZES}
+          crop={CARD_CROP}
+          className={`absolute inset-0 w-full h-full transition-all duration-700 ${
+            hoverImage
+              ? isHovered
+                ? "opacity-0 scale-100"
+                : "opacity-100 scale-100 group-hover:scale-105"
+              : "group-hover:scale-105"
+          }`}
+        />
+
+        {/* Hover image — lazy-mounted ONLY after the first hover event.
+            This means 0 Cloudinary requests for this image on page load. */}
+        {hoverImage && hasHovered && (
+          <OptimizedImage
+            src={hoverImage}
+            alt={product.name}
+            sizes={CARD_SIZES}
+            crop={CARD_CROP}
+            className={`absolute inset-0 w-full h-full transition-all duration-700 ${
+              isHovered ? "opacity-100 scale-105" : "opacity-0 scale-100"
+            }`}
+          />
+        )}
+
+        {/* Badges */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+          {product.discount > 0 && (
+            <span className="bg-primary text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
+              Sale -{product.discount}%
+            </span>
+          )}
+          {product.isNew && (
+            <span className="bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
+              New
+            </span>
+          )}
+        </div>
+
+        {/* Quick Add Overlay */}
+        <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-20">
+          <button
+            className="w-full bg-white/95 backdrop-blur-sm text-gray-900 font-medium tracking-wide uppercase text-xs py-4 flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(product._id);
+            }}
+          >
+            <ShoppingBag size={16} />
+            Quick View
+          </button>
+        </div>
+
+        {/* Wishlist Icon */}
+        <button
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-4 right-4 z-20 text-gray-400 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+        >
+          <Heart size={20} />
+        </button>
+      </div>
+
+      {/* Product Info */}
+      <div className="text-center flex flex-col flex-grow">
+        {product.brand && (
+          <span className="text-[10px] font-semibold tracking-[0.2em] text-gray-400 uppercase mb-2">
+            {product.brand}
+          </span>
+        )}
+
+        <h3 className="text-lg font-serif font-medium text-gray-900 mb-2 px-2 hover:text-primary transition-colors truncate">
+          {product.name}
+        </h3>
+
+        {/* Sizes display */}
+        {product.ProductVariants && product.ProductVariants.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-3 px-2">
+            {[
+              ...new Set(
+                product.ProductVariants.map((v) => v.size).filter(
+                  (s) => s && s !== "NoSize"
+                )
+              ),
+            ].map((size, idx) => (
+              <span
+                key={idx}
+                className="text-[10px] sm:text-xs font-medium text-gray-500 border border-gray-200 px-2 py-0.5 whitespace-nowrap"
+              >
+                {size}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-auto flex items-center justify-center gap-3">
+          {product.discount > 0 ? (
+            <>
+              <span className="text-sm text-gray-400 line-through">
+                EGP {parseFloat(product.basePrice).toFixed(2)}
+              </span>
+              <span className="text-base font-medium text-primary">
+                EGP{" "}
+                {calculateDiscountedPrice(product.basePrice, product.discount)}
+              </span>
+            </>
+          ) : (
+            <span className="text-base font-medium text-gray-900">
+              EGP {parseFloat(product.basePrice).toFixed(2)}
+            </span>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
