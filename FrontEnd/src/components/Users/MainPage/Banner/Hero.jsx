@@ -3,62 +3,39 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import OptimizedImage from "../../../common/OptimizedImage";
 
-// Default slides in case no data is fetched
-const defaultSlides = [
-  {
-    src: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop",
-    title: "New Arrivals",
-    subtitle: "Spring Collection 2026",
-    description: "Discover the latest trends in women's fashion, curated for the modern aesthetic.",
-    buttonText: "Shop Collection",
-    buttonLink: "/products",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1618244972963-dbee1a7edc95?q=80&w=2070&auto=format&fit=crop",
-    title: "Timeless Beauty",
-    subtitle: "Premium Cosmetics",
-    description: "Elevate your daily routine with our exclusive range of skincare and makeup.",
-    buttonText: "Explore Beauty",
-    buttonLink: "/products?category=beauty",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1584916201218-f4242ceb4809?q=80&w=2070&auto=format&fit=crop",
-    title: "Chic Accessories",
-    subtitle: "The Perfect Details",
-    description: "Complete your look with our handpicked selection of bags and jewelry.",
-    buttonText: "View Accessories",
-    buttonLink: "/products?category=accessories",
-  },
-];
-
 const Hero = ({ heroData }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Determine which slides to show
-  let slides = defaultSlides;
-  if (heroData && heroData.HeroImage && heroData.HeroImage.length > 0) {
-    slides = heroData.HeroImage.map(imageSrc => ({
-      src: imageSrc,
-      title: heroData.HeroName || "Welcome to SheShine",
-      subtitle: "Featured",
-      description: heroData.HeroDescription || "Explore our collection",
-      buttonText: heroData.HeroButton || "Shop Now",
-      buttonLink: "/products",
-    }));
-  }
+  const hasData = heroData && heroData.HeroImage && heroData.HeroImage.length > 0;
+
+  const slides = hasData ? heroData.HeroImage.map(imageSrc => ({
+    src: imageSrc,
+    title: heroData.HeroName || "Welcome to SheShine",
+    subtitle: "Featured",
+    description: heroData.HeroDescription || "Explore our collection",
+    buttonText: heroData.HeroButton || "Shop Now",
+    buttonLink: "/products",
+  })) : [];
 
   const nextSlide = React.useCallback(() => {
+    if (!hasData) return;
     setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  }, [slides.length]);
+  }, [hasData, slides.length]);
 
   const prevSlide = () => {
+    if (!hasData) return;
     setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
 
   useEffect(() => {
+    if (!hasData) return;
     const interval = setInterval(nextSlide, 6000);
     return () => clearInterval(interval);
-  }, [nextSlide]);
+  }, [hasData, nextSlide]);
+
+  if (!hasData) {
+    return <div className="relative w-full h-[100vh] min-h-[600px] overflow-hidden bg-gray-900 animate-pulse" />;
+  }
 
   return (
     <div className="relative w-full h-[100vh] min-h-[600px] overflow-hidden bg-gray-900">
