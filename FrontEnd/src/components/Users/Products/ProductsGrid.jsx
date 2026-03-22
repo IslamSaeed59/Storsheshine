@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React from "react";
 import { Heart, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -63,29 +63,9 @@ const ProductsGrid = ({ products }) => {
 // Extracted into its own component so each card manages its own hover state
 // independently without causing the whole grid to re-render.
 const ProductCard = ({ product, index, onViewDetails, calculateDiscountedPrice }) => {
-  // hasHovered is intentionally one-way (false → true, never back).
-  // Once the hover image is mounted in the DOM it stays mounted,
-  // so subsequent hovers don't trigger a new Cloudinary request.
-  const [hasHovered, setHasHovered] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseEnter = useCallback(() => {
-    if (!hasHovered) setHasHovered(true); // lazy-mount only once
-    setIsHovered(true);
-  }, [hasHovered]);
-
-  const handleMouseLeave = useCallback(() => {
-    setIsHovered(false);
-  }, []);
-
   const primaryImage =
     (Array.isArray(product.images) ? product.images[0] : product.images) ||
     "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop";
-
-  const hoverImage =
-    Array.isArray(product.images) && product.images.length > 1
-      ? product.images[1]
-      : null;
 
   return (
     <motion.div
@@ -94,39 +74,17 @@ const ProductCard = ({ product, index, onViewDetails, calculateDiscountedPrice }
       transition={{ duration: 0.5, delay: index * 0.05 }}
       className="group flex flex-col cursor-pointer"
       onClick={() => onViewDetails(product._id)}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       {/* Image Container */}
       <div className="relative aspect-[3/4] mb-6 bg-gray-50 overflow-hidden">
-        {/* Primary image — always rendered */}
+        {/* Primary image */}
         <OptimizedImage
           src={primaryImage}
           alt={product.name}
           sizes={CARD_SIZES}
           crop={CARD_CROP}
-          className={`absolute inset-0 w-full h-full transition-all duration-700 ${
-            hoverImage
-              ? isHovered
-                ? "opacity-0 scale-100"
-                : "opacity-100 scale-100 group-hover:scale-105"
-              : "group-hover:scale-105"
-          }`}
+          className="absolute inset-0 w-full h-full transition-transform duration-700 group-hover:scale-105"
         />
-
-        {/* Hover image — lazy-mounted ONLY after the first hover event.
-            This means 0 Cloudinary requests for this image on page load. */}
-        {hoverImage && hasHovered && (
-          <OptimizedImage
-            src={hoverImage}
-            alt={product.name}
-            sizes={CARD_SIZES}
-            crop={CARD_CROP}
-            className={`absolute inset-0 w-full h-full transition-all duration-700 ${
-              isHovered ? "opacity-100 scale-105" : "opacity-0 scale-100"
-            }`}
-          />
-        )}
 
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
