@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Info, Minus, Plus, X, Ruler, ShoppingBag } from "lucide-react";
+import { Info, Minus, Plus, X, Ruler, ShoppingBag, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "../../../context/CartContext";
 import { optimizeCloudinaryUrl } from "../../../utils/cloudinaryParams";
 
 const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -195,22 +197,31 @@ const ProductCard = ({ product }) => {
     <div className="bg-white pb-20">
       {/* Breadcrumbs - Minimalist */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-b border-gray-100">
-        <div className="flex items-center gap-2 text-xs font-medium tracking-widest uppercase">
-          <span className="text-gray-400 hover:text-gray-900 transition-colors cursor-pointer">
-            Home
-          </span>
-          <span className="text-gray-300">/</span>
-          {Category && (
-            <>
-              <span className="text-gray-400 hover:text-gray-900 transition-colors cursor-pointer">
-                {Category.name || "Category"}
-              </span>
-              <span className="text-gray-300">/</span>
-            </>
-          )}
-          <span className="text-gray-900 truncate max-w-[200px] sm:max-w-xs block">
-            {name}
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-medium tracking-widest uppercase">
+            <span className="text-gray-400 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => navigate("/")}>
+              Home
+            </span>
+            <span className="text-gray-300">/</span>
+            {Category && (
+              <>
+                <span className="text-gray-400 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => navigate(`/categories/${Category._id}`)}>
+                  {Category.name || "Category"}
+                </span>
+                <span className="text-gray-300">/</span>
+              </>
+            )}
+            <span className="text-gray-900 truncate max-w-[200px] sm:max-w-xs block">
+              {name}
+            </span>
+          </div>
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-gray-500 hover:text-gray-900 transition-colors group"
+          >
+            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
+            Back
+          </button>
         </div>
       </div>
 

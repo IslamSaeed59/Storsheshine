@@ -16,6 +16,8 @@ const CARD_CROP = "c_fill,g_auto,ar_3:4";
 const ProductsGrid = ({ products }) => {
   const navigate = useNavigate();
 
+  console.log("products", products);
+
   const handleViewDetails = (productId) => {
     navigate(`/Product/${productId}`);
   };
@@ -62,17 +64,27 @@ const ProductsGrid = ({ products }) => {
 // ─── Extracted ProductCard ────────────────────────────────────────────────────
 // Extracted into its own component so each card manages its own hover state
 // independently without causing the whole grid to re-render.
-const ProductCard = ({ product, index, onViewDetails, calculateDiscountedPrice }) => {
+const ProductCard = ({
+  product,
+  index,
+  onViewDetails,
+  calculateDiscountedPrice,
+}) => {
   const primaryImage =
     (Array.isArray(product.images) ? product.images[0] : product.images) ||
     "https://images.unsplash.com/photo-1512496015851-a1dc8aeddf0b?q=80&w=1974&auto=format&fit=crop";
+
+  // Check if product is entirely out of stock
+  const isOutOfStock = product.ProductVariants && 
+    product.ProductVariants.length > 0 && 
+    product.ProductVariants.every(v => v.stock <= 0);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
-      className="group flex flex-col cursor-pointer"
+      className={`group flex flex-col cursor-pointer ${isOutOfStock ? 'opacity-80' : ''}`}
       onClick={() => onViewDetails(product._id)}
     >
       {/* Image Container */}
@@ -83,20 +95,28 @@ const ProductCard = ({ product, index, onViewDetails, calculateDiscountedPrice }
           alt={product.name}
           sizes={CARD_SIZES}
           crop={CARD_CROP}
-          className="absolute inset-0 w-full h-full transition-transform duration-700 group-hover:scale-105"
+          className={`absolute inset-0 w-full h-full transition-transform duration-700 group-hover:scale-105 ${isOutOfStock ? 'grayscale-[0.3]' : ''}`}
         />
 
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {product.discount > 0 && (
-            <span className="bg-primary text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
-              Sale -{product.discount}%
+          {isOutOfStock ? (
+            <span className="bg-red-600 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
+              Out of Stock
             </span>
-          )}
-          {product.isNew && (
-            <span className="bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
-              New
-            </span>
+          ) : (
+            <>
+              {product.discount > 0 && (
+                <span className="bg-primary text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
+                  Sale -{product.discount}%
+                </span>
+              )}
+              {product.isNew && (
+                <span className="bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1">
+                  New
+                </span>
+              )}
+            </>
           )}
         </div>
 
@@ -141,17 +161,22 @@ const ProductCard = ({ product, index, onViewDetails, calculateDiscountedPrice }
             {[
               ...new Set(
                 product.ProductVariants.map((v) => v.size).filter(
-                  (s) => s && s !== "NoSize"
-                )
+                  (s) => s && s !== "NoSize",
+                ),
               ),
-            ].map((size, idx) => (
-              <span
-                key={idx}
-                className="text-[10px] sm:text-xs font-medium text-gray-500 border border-gray-200 px-2 py-0.5 whitespace-nowrap"
-              >
-                {size}
-              </span>
-            ))}
+            ].map((size, idx) => {
+              const isSizeOutOfStock = product.ProductVariants.filter(v => v.size === size).every(v => v.stock <= 0);
+              return (
+                <span
+                  key={idx}
+                  className={`text-[10px] sm:text-xs font-medium border px-2 py-0.5 whitespace-nowrap ${
+                    isSizeOutOfStock ? 'text-gray-300 border-gray-100 line-through' : 'text-gray-500 border-gray-200'
+                  }`}
+                >
+                  {size}
+                </span>
+              );
+            })}
           </div>
         )}
 

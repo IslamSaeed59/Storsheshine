@@ -33,6 +33,9 @@ const UserProducts = () => {
     const search = searchParams.get("search");
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
+    const pageParam = parseInt(searchParams.get("page")) || 1;
+
+    setCurrentPage(pageParam);
 
     const initialFilters = {};
     if (categoryId) initialFilters.categoryId = categoryId;
@@ -45,16 +48,16 @@ const UserProducts = () => {
 
     if (hasInitialFilters) {
       setActiveFilters(initialFilters);
-      fetchProducts(1, initialFilters);
+      fetchProducts(pageParam, initialFilters);
     } else {
-      fetchProducts(1, {});
+      fetchProducts(pageParam, {});
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // The page change data-fetching is now fully handled by `handlePageChange` directly.
 
-  const syncFiltersToUrl = (filters) => {
+  const syncFiltersToUrl = (filters, page = 1) => {
     const params = new URLSearchParams();
     if (filters.categoryId) params.set("categoryId", filters.categoryId);
     if (filters.subCategories)
@@ -62,6 +65,7 @@ const UserProducts = () => {
     if (filters.search) params.set("search", filters.search);
     if (filters.minPrice) params.set("minPrice", filters.minPrice);
     if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
+    if (page > 1) params.set("page", page.toString());
     setSearchParams(params, { replace: true });
   };
 
@@ -95,7 +99,7 @@ const UserProducts = () => {
   const handleFilterChange = (filters) => {
     setActiveFilters(filters);
     setCurrentPage(1);
-    syncFiltersToUrl(filters);
+    syncFiltersToUrl(filters, 1);
     fetchProducts(1, filters);
   };
 
@@ -109,6 +113,7 @@ const UserProducts = () => {
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
+    syncFiltersToUrl(activeFilters, page);
     fetchProducts(page, activeFilters);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

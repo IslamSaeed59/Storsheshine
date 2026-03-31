@@ -125,7 +125,7 @@ exports.getProducts = asyncHandler(async (req, res) => {
   } else {
     // No pagination → return ALL products sorted A to Z
     products = await Product.find(query)
-      .select("_id name isBestseller images discount basePrice categoryId")
+      .select("_id name isBestseller images discount basePrice  categoryId")
       .populate("categoryId", "name parentId")
       .sort({ name: 1 }); // Sort A to Z (ascending)
     totalProducts = products.length;
@@ -137,7 +137,7 @@ exports.getProducts = asyncHandler(async (req, res) => {
     products.map(async (product) => {
       const variants = await ProductVariant.find({
         productId: product._id,
-      }).select("size");
+      }).select("size stock");
       const p = product.toObject();
       return {
         ...p,
